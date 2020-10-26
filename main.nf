@@ -1,11 +1,11 @@
 #!/usr/bin/env nextflow
 /*
 ========================================================================================
-                         nf-core/simulate
+                         lifebit-ai/simulate
 ========================================================================================
- nf-core/simulate Analysis Pipeline.
+ lifebit-ai/simulate Analysis Pipeline.
  #### Homepage / Documentation
- https://github.com/nf-core/simulate
+ https://github.com/lifebit-ai/simulate
 ----------------------------------------------------------------------------------------
 */
 
@@ -18,7 +18,7 @@ def helpMessage() {
 
     The typical command for running the pipeline is as follows:
 
-    nextflow run nf-core/simulate --input '*_R{1,2}.fastq.gz' -profile docker
+    nextflow run lifebit-ai/simulate --input '*_R{1,2}.fastq.gz' -profile docker
 
     Mandatory arguments:
       --input [file]                  Path to input data (must be surrounded with quotes)
@@ -164,8 +164,8 @@ Channel.from(summary.collect{ [it.key, it.value] })
     .map { x -> """
     id: 'nf-core-simulate-summary'
     description: " - this information is collected when the pipeline is started."
-    section_name: 'nf-core/simulate Workflow Summary'
-    section_href: 'https://github.com/nf-core/simulate'
+    section_name: 'lifebit-ai/simulate Workflow Summary'
+    section_href: 'https://github.com/lifebit-ai/simulate'
     plot_type: 'html'
     data: |
         <dl class=\"dl-horizontal\">
@@ -276,9 +276,9 @@ process output_documentation {
 workflow.onComplete {
 
     // Set up the e-mail variables
-    def subject = "[nf-core/simulate] Successful: $workflow.runName"
+    def subject = "[lifebit-ai/simulate] Successful: $workflow.runName"
     if (!workflow.success) {
-        subject = "[nf-core/simulate] FAILED: $workflow.runName"
+        subject = "[lifebit-ai/simulate] FAILED: $workflow.runName"
     }
     def email_fields = [:]
     email_fields['version'] = workflow.manifest.version
@@ -310,12 +310,12 @@ workflow.onComplete {
         if (workflow.success) {
             mqc_report = ch_multiqc_report.getVal()
             if (mqc_report.getClass() == ArrayList) {
-                log.warn "[nf-core/simulate] Found multiple reports from process 'multiqc', will use only one"
+                log.warn "[lifebit-ai/simulate] Found multiple reports from process 'multiqc', will use only one"
                 mqc_report = mqc_report[0]
             }
         }
     } catch (all) {
-        log.warn "[nf-core/simulate] Could not attach MultiQC report to summary email"
+        log.warn "[lifebit-ai/simulate] Could not attach MultiQC report to summary email"
     }
 
     // Check if we are only sending emails on failure
@@ -347,7 +347,7 @@ workflow.onComplete {
             if (params.plaintext_email) { throw GroovyException('Send plaintext e-mail, not HTML') }
             // Try to send HTML e-mail using sendmail
             [ 'sendmail', '-t' ].execute() << sendmail_html
-            log.info "[nf-core/simulate] Sent summary e-mail to $email_address (sendmail)"
+            log.info "[lifebit-ai/simulate] Sent summary e-mail to $email_address (sendmail)"
         } catch (all) {
             // Catch failures and try with plaintext
             def mail_cmd = [ 'mail', '-s', subject, '--content-type=text/html', email_address ]
@@ -355,7 +355,7 @@ workflow.onComplete {
               mail_cmd += [ '-A', mqc_report ]
             }
             mail_cmd.execute() << email_html
-            log.info "[nf-core/simulate] Sent summary e-mail to $email_address (mail)"
+            log.info "[lifebit-ai/simulate] Sent summary e-mail to $email_address (mail)"
         }
     }
 
@@ -381,10 +381,10 @@ workflow.onComplete {
     }
 
     if (workflow.success) {
-        log.info "-${c_purple}[nf-core/simulate]${c_green} Pipeline completed successfully${c_reset}-"
+        log.info "-${c_purple}[lifebit-ai/simulate]${c_green} Pipeline completed successfully${c_reset}-"
     } else {
         checkHostname()
-        log.info "-${c_purple}[nf-core/simulate]${c_red} Pipeline completed with errors${c_reset}-"
+        log.info "-${c_purple}[lifebit-ai/simulate]${c_red} Pipeline completed with errors${c_reset}-"
     }
 
 }
@@ -408,7 +408,7 @@ def nfcoreHeader() {
     ${c_blue}  |\\ | |__  __ /  ` /  \\ |__) |__         ${c_yellow}}  {${c_reset}
     ${c_blue}  | \\| |       \\__, \\__/ |  \\ |___     ${c_green}\\`-._,-`-,${c_reset}
                                             ${c_green}`._,._,\'${c_reset}
-    ${c_purple}  nf-core/simulate v${workflow.manifest.version}${c_reset}
+    ${c_purple}  lifebit-ai/simulate v${workflow.manifest.version}${c_reset}
     -${c_dim}--------------------------------------------------${c_reset}-
     """.stripIndent()
 }

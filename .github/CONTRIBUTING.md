@@ -1,23 +1,23 @@
-# nf-core/simulate: Contributing Guidelines
+# lifebit-ai/simulate: Contributing Guidelines
 
 Hi there!
-Many thanks for taking an interest in improving nf-core/simulate.
+Many thanks for taking an interest in improving lifebit-ai/simulate.
 
-We try to manage the required tasks for nf-core/simulate using GitHub issues, you probably came to this page when creating one.
+We try to manage the required tasks for lifebit-ai/simulate using GitHub issues, you probably came to this page when creating one.
 Please use the pre-filled template to save time.
 
 However, don't be put off by this template - other more general issues and suggestions are welcome!
 Contributions to the code are even more welcome ;)
 
-> If you need help using or modifying nf-core/simulate then the best place to ask is on the nf-core Slack [#simulate](https://nfcore.slack.com/channels/simulate) channel ([join our Slack here](https://nf-co.re/join/slack)).
+> If you need help using or modifying lifebit-ai/simulate then the best place to ask is on the nf-core Slack [#simulate](https://nfcore.slack.com/channels/simulate) channel ([join our Slack here](https://nf-co.re/join/slack)).
 
 ## Contribution workflow
 
-If you'd like to write some code for nf-core/simulate, the standard workflow is as follows:
+If you'd like to write some code for lifebit-ai/simulate, the standard workflow is as follows:
 
-1. Check that there isn't already an issue about your idea in the [nf-core/simulate issues](https://github.com/nf-core/simulate/issues) to avoid duplicating work
+1. Check that there isn't already an issue about your idea in the [lifebit-ai/simulate issues](https://github.com/lifebit-ai/simulate/issues) to avoid duplicating work
     * If there isn't one already, please create one so that others know you're working on this
-2. [Fork](https://help.github.com/en/github/getting-started-with-github/fork-a-repo) the [nf-core/simulate repository](https://github.com/nf-core/simulate) to your GitHub account
+2. [Fork](https://help.github.com/en/github/getting-started-with-github/fork-a-repo) the [lifebit-ai/simulate repository](https://github.com/lifebit-ai/simulate) to your GitHub account
 3. Make the necessary changes / additions within your forked repository
 4. Submit a Pull Request against the `dev` branch and wait for the code to be reviewed and merged
 
@@ -54,4 +54,4 @@ These tests are run both with the latest available version of `Nextflow` and als
 
 ## Getting help
 
-For further information/help, please consult the [nf-core/simulate documentation](https://nf-co.re/simulate/docs) and don't hesitate to get in touch on the nf-core Slack [#simulate](https://nfcore.slack.com/channels/simulate) channel ([join our Slack here](https://nf-co.re/join/slack)).
+For further information/help, please consult the [lifebit-ai/simulate documentation](https://nf-co.re/simulate/docs) and don't hesitate to get in touch on the nf-core Slack [#simulate](https://nfcore.slack.com/channels/simulate) channel ([join our Slack here](https://nf-co.re/join/slack)).
