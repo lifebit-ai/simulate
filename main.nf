@@ -18,12 +18,12 @@
 def helpMessage() {
 
     log.info"""
-
+    
     Usage:
 
     The typical command for running the pipeline is as follows:
 
-    nextflow run lifebit-ai/simulate
+    nextflow run main.nf --plink_sim_settings_file testdata/plink/wgas.sim
 
     Mandatory arguments:
 
@@ -57,6 +57,9 @@ summary['Launch dir']       = workflow.launchDir
 summary['Working dir']      = workflow.workDir
 summary['Script dir']       = workflow.projectDir
 summary['User']             = workflow.userName
+
+summary['plink_sim_settings_file']          = params.plink_sim_settings_file
+
 
 log.info summary.collect { k,v -> "${k.padRight(18)}: $v" }.join("\n")
 log.info "-\033[2m--------------------------------------------------\033[0m-"
@@ -116,9 +119,41 @@ Channel.from(summary.collect{ [it.key, it.value] })
   Setting up input datasets  
 -----------------------------*/
 
+Channel
+  .fromPath(params.plink_sim_settings_file, checkIfExists: true)
+  .ifEmpty { exit 1, "Simulation settings file to generate PLINK files not found: ${params.plink_sim_settings_file}" }
+  .set { plink_sim_settings_ch }
 
 
-/*-----------------------------
-  Setting up extra METAL flags
--------------------------------*/
 
+/*-----------------------
+  Setting up extra flags
+-------------------------*/
+
+
+
+/*-----------------------
+  Simulating PLINK files
+-------------------------*/
+
+process simulate_plink {
+    publishDir "${params.outdir}/simulated_PLINKs", mode: "copy"
+
+    input:
+    file settings from plink_sim_settings_ch
+
+    output:
+    file("simulated*") into simulated_plinks_ch
+
+    script:
+    """
+    plink --simulate ${settings} --make-bed --out simulated
+    """
+
+}
+
+
+
+/*---------------------------------
+  Split PLINK files per chromosome 
+-----------------------------------*/
