@@ -111,7 +111,7 @@ process simulate_plink {
 
     shell:
     '''
-    plink --simulate !{settings} !{extra_flags} --make-bed --out simulated
+    plink --simulate !{settings} acgt !{extra_flags} --make-bed --out simulated
     '''
 }
 
