@@ -25,8 +25,6 @@ def helpMessage() {
 
     nextflow run main.nf --plink_sim_settings_file testdata/plink/wgas.sim
 
-    Mandatory arguments:
-
     """.stripIndent()
 }
 
@@ -58,8 +56,11 @@ summary['Working dir']      = workflow.workDir
 summary['Script dir']       = workflow.projectDir
 summary['User']             = workflow.userName
 
-summary['plink_sim_settings_file']          = params.plink_sim_settings_file
-
+summary['plink_sim_settings_file']  = params.plink_sim_settings_file
+summary['simulate_ncases']          = params.simulate_ncases
+summary['simulate_ncontrols']       = params.simulate_ncontrols
+summary['simulate_prevalence']      = params.simulate_prevalence
+summary['assoc']                    = params.assoc
 
 log.info summary.collect { k,v -> "${k.padRight(18)}: $v" }.join("\n")
 log.info "-\033[2m--------------------------------------------------\033[0m-"
@@ -106,12 +107,35 @@ process simulate_plink {
     file settings from plink_sim_settings_ch
 
     output:
-    file("simulated*") into simulated_plinks_ch
+    file("*{bim,bed,fam}") into simulated_plinks_ch
 
     shell:
     '''
     plink --simulate !{settings} !{extra_flags} --make-bed --out simulated
     '''
+}
+
+
+
+/*----------------------
+  Simulating VCF files  
+------------------------*/
+
+if (params.simulate_vcf) {
+    process simulate_vcf {
+        publishDir "${params.outdir}/simulated_vcf", mode: "copy"
+
+        input: 
+        file("*") from simulated_plinks_ch
+
+        output:
+        file("*") into simulated_vcf_ch
+
+        script:
+        """
+        plink --bfile simulated --recode vcf --out simulated
+        """
+    }
 }
 
 
