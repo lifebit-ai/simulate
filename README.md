@@ -14,6 +14,6 @@ This pipeline performs simulations of various genomics datasets. It is is built 
 
 ## 3 - Documentation
 
-The lifebit-ai/simulate pipeline comes with documentation about the pipeline which you can read at [https://lifebit-ai/simulate/docs](https://lifebit-ai/simulate/docs) or find in the [`docs/` directory](docs).
+The lifebit-ai/simulate pipeline comes with documentation about the pipeline which you can find in the [`docs/` directory](docs).
 
 
