@@ -115,9 +115,11 @@ Channel.from(summary.collect{ [it.key, it.value] })
 
 
 
-/*---------------------------
-  Setting up input datasets  
------------------------------*/
+/*------------------
+  Setting up inputs  
+--------------------*/
+
+// Setting up input settings for simulated PLINK files
 
 Channel
   .fromPath(params.plink_sim_settings_file, checkIfExists: true)
@@ -129,6 +131,15 @@ Channel
 /*-----------------------
   Setting up extra flags
 -------------------------*/
+
+// Initialise variable to store optional parameters
+extra_flags = ""
+
+// Setting up extra PLINK flags
+
+if ( params.simulate_ncases ) { extra_flags += " --simulate-ncases ${params.simulate_ncases} " }
+if ( params.simulate_ncontrols ) { extra_flags += " --simulate-ncontrols ${params.simulate_ncontrols} " }
+if ( params.simulate_prevalence ) { extra_flags += " --simulate-prevalence ${params.simulate_prevalence} " }
 
 
 
@@ -145,13 +156,17 @@ process simulate_plink {
     output:
     file("simulated*") into simulated_plinks_ch
 
-    script:
-    """
-    plink --simulate ${settings} --make-bed --out simulated
-    """
+    shell:
+    '''
+    plink --simulate !{settings} !{extra_flags} --make-bed --out simulated
+    '''
 
 }
 
+// TO CONSIDER
+// --chr 1..22
+// verbose
+// build 38 - from a tool/ 
 
 
 /*---------------------------------
