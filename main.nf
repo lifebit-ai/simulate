@@ -140,15 +140,16 @@ extra_flags = ""
 if ( params.simulate_ncases ) { extra_flags += " --simulate-ncases ${params.simulate_ncases} " }
 if ( params.simulate_ncontrols ) { extra_flags += " --simulate-ncontrols ${params.simulate_ncontrols} " }
 if ( params.simulate_prevalence ) { extra_flags += " --simulate-prevalence ${params.simulate_prevalence} " }
+if ( params.assoc ) { extra_flags += " --assoc  " }
 
 
 
-/*-----------------------
-  Simulating PLINK files
--------------------------*/
+/*-----------------------------------------------------------------
+  Simulating PLINK files (and GWAS summary statistics if requested) 
+-------------------------------------------------------------------*/
 
 process simulate_plink {
-    publishDir "${params.outdir}/simulated_PLINKs", mode: "copy"
+    publishDir "${params.outdir}/simulated_plink", mode: "copy"
 
     input:
     file settings from plink_sim_settings_ch
@@ -160,8 +161,9 @@ process simulate_plink {
     '''
     plink --simulate !{settings} !{extra_flags} --make-bed --out simulated
     '''
-
 }
+
+
 
 // TO CONSIDER
 // --chr 1..22
