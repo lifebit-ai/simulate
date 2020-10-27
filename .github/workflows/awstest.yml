@@ -10,7 +10,7 @@ on:
 jobs:
   run-awstest:
     name: Run AWS tests
-    if: github.repository == 'nf-core/simulate'
+    if: github.repository == 'lifebit-ai/simulate'
     runs-on: ubuntu-latest
     steps:
       - name: Setup Miniconda
@@ -37,4 +37,4 @@ jobs:
           --job-name nf-core-simulate \
           --job-queue $AWS_JOB_QUEUE \
           --job-definition $AWS_JOB_DEFINITION \
-          --container-overrides '{"command": ["nf-core/simulate", "-r '"${GITHUB_SHA}"' -profile test --outdir s3://'"${AWS_S3_BUCKET}"'/simulate/results-'"${GITHUB_SHA}"' -w s3://'"${AWS_S3_BUCKET}"'/simulate/work-'"${GITHUB_SHA}"' -with-tower"], "environment": [{"name": "TOWER_ACCESS_TOKEN", "value": "'"$TOWER_ACCESS_TOKEN"'"}]}'simulate/work-'"${GITHUB_SHA}"' -with-tower"], "environment": [{"name": "TOWER_ACCESS_TOKEN", "value": "'"$TOWER_ACCESS_TOKEN"'"}]}'
+          --container-overrides '{"command": ["lifebit-ai/simulate", "-r '"${GITHUB_SHA}"' -profile test --outdir s3://'"${AWS_S3_BUCKET}"'/simulate/results-'"${GITHUB_SHA}"' -w s3://'"${AWS_S3_BUCKET}"'/simulate/work-'"${GITHUB_SHA}"' -with-tower"], "environment": [{"name": "TOWER_ACCESS_TOKEN", "value": "'"$TOWER_ACCESS_TOKEN"'"}]}'simulate/work-'"${GITHUB_SHA}"' -with-tower"], "environment": [{"name": "TOWER_ACCESS_TOKEN", "value": "'"$TOWER_ACCESS_TOKEN"'"}]}'

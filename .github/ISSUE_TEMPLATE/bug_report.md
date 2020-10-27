@@ -1,5 +1,5 @@
 <!--
-# nf-core/simulate bug report
+# lifebit-ai/simulate bug report
 
 Hi there!
 
@@ -38,7 +38,7 @@ Steps to reproduce the behaviour:
 
 - Engine: <!-- [e.g. Conda, Docker or Singularity] -->
 - version: <!-- [e.g. 1.0.0] -->
-- Image tag: <!-- [e.g. nfcore/simulate:1.0.0] -->
+- Image tag: <!-- [e.g. lifebitai/simulate:1.0.0] -->
 
 ## Additional context
 

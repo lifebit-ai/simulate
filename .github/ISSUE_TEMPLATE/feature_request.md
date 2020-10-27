@@ -1,5 +1,5 @@
 <!--
-# nf-core/simulate feature request
+# lifebit-ai/simulate feature request
 
 Hi there!
 
