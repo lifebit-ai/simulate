@@ -60,7 +60,8 @@ summary['plink_sim_settings_file']  = params.plink_sim_settings_file
 summary['simulate_ncases']          = params.simulate_ncases
 summary['simulate_ncontrols']       = params.simulate_ncontrols
 summary['simulate_prevalence']      = params.simulate_prevalence
-summary['assoc']                    = params.assoc
+summary['simulate_plink_assoc']     = params.assoc
+summary['simulate_vcf']             = params.simulate_vcf
 
 log.info summary.collect { k,v -> "${k.padRight(18)}: $v" }.join("\n")
 log.info "-\033[2m--------------------------------------------------\033[0m-"
@@ -92,7 +93,7 @@ extra_flags = ""
 if ( params.simulate_ncases ) { extra_flags += " --simulate-ncases ${params.simulate_ncases} " }
 if ( params.simulate_ncontrols ) { extra_flags += " --simulate-ncontrols ${params.simulate_ncontrols} " }
 if ( params.simulate_prevalence ) { extra_flags += " --simulate-prevalence ${params.simulate_prevalence} " }
-if ( params.assoc ) { extra_flags += " --assoc  " }
+if ( params.simulate_plink_assoc ) { extra_flags += " --assoc  " }
 
 
 
