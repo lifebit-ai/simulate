@@ -1,4 +1,4 @@
-FROM lifebitai/base:1.10.2
+FROM nfcore/base:1.10.2
 LABEL authors="Magda Meier" \
       description="Docker image containing all software requirements for the lifebit-ai/simulate pipeline"
 
