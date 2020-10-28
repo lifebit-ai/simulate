@@ -118,7 +118,7 @@ Channel
 if ( params.simulate_ncontrols ) { extra_flags += " --simulate-ncontrols ${params.simulate_ncontrols} " }
 if ( params.simulate_prevalence ) { extra_flags += " --simulate-prevalence ${params.simulate_prevalence} " }
 if ( params.simulate_plink_assoc ) { extra_flags += " --assoc  " }
- */
+*/
 
 
 
@@ -127,30 +127,49 @@ if ( params.simulate_plink_assoc ) { extra_flags += " --assoc  " }
 --------------------------------------------------*/
 
 process simulate_gen_and_sample {
-    publishDir "${params.outdir}/simulated_hapgen_original", mode: "copy"
+    publishDir "${params.outdir}/simulated_hapgen", mode: "copy"
 
     input:
     tuple file(data), val(chromosome) from data_hapgen2_ch
     path(ref_path)
 
     output:
-    file("*") into simulated_gen_ch
+    tuple val(chromosome), file("*{simulated_hapgen.gen,simulated_hapgen.sample}") into simulated_gen_ch
 
-    script:
+    shell:
     dir = "$baseDir/testdata/1000G-data/ALL_1000G_phase1integrated_v3_impute/" // Not ideal - hardcoded
     refHapFile = file(dir +  "/" + sprintf(params.refHapFilesPattern, chromosome))
     refGeneticMapFile = file(dir + "/" + sprintf(params.refGeneticMapFilesPattern, chromosome))
-    """
+    '''
+    
+    # Run hapgen2
+
     hapgen2  \
-    -m $refGeneticMapFile \
-    -l $data \
-    -h $refHapFile \
-    -o chr${chromosome}-simulated_hapgen \
-    -n 100 0 \
+    -m !{refGeneticMapFile} \
+    -l !{data} \
+    -h !{refHapFile} \
+    -o chr!{chromosome}-simulated_hapgen \
+    -n 10 0 \
     -dl 45162 0 0 0 \
     -no_haps_output
-    """
+
+    # Rename output files
+
+    for i in chr!{chromosome}-simulated_hapgen.controls.gen
+    do
+        mv $i chr!{chromosome}-simulated_hapgen.gen
+    done
+
+    for i in chr!{chromosome}-simulated_hapgen.controls.sample
+    do
+        mv $i chr!{chromosome}-simulated_hapgen.sample
+    done
+
+    '''
 }
+
+
+
 
 
 
