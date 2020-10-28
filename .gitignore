@@ -7,3 +7,4 @@ tests/
 testing/
 testing*
 *.pyc
+testdata/1000G-data/
