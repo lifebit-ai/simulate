@@ -91,7 +91,6 @@ Channel
 
 process simulate_gen_and_sample {
     publishDir "${params.outdir}/simulated_hapgen", mode: "copy"
-    errorStrategy 'ignore' // WILL NEED TO REMOVE ONLY PRESENT FOR LOCAL TESTING
     
     input:
     file(legend) from legend_for_hapgen2_ch
@@ -141,7 +140,7 @@ process simulate_gen_and_sample {
   Simulating VCF files (based on simulated .gen files) 
 -------------------------------------------------------*/
 
-/* process simulate_vcf {
+process simulate_vcf {
     publishDir "${params.outdir}/simulated_vcf", mode: "copy"
 
     input:
@@ -153,12 +152,11 @@ process simulate_gen_and_sample {
     shell:
     '''
     plink2 \
-    --gen !{gen} \
+    --gen !{gen} ref-unknown \
     --sample !{sample} \
-    --oxford-single-chr \
     --recode vcf \
     --out !{gen} \
     '''
-} */
+}
 
 
