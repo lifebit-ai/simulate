@@ -69,7 +69,7 @@ log.info "-\033[2m--------------------------------------------------\033[0m-"
 ---------------------------------*/
 
 Channel
-  .fromPath(params.legend_for_hapgen2, checkIfExists: true)
+  .fromPath("${params.legend_for_hapgen2}/*.{leg}")
   .map { file -> 
        def key = file.name.toString().tokenize('-').get(0)
        return tuple(key, file)
