@@ -85,11 +85,32 @@ Channel
 
 
 
+/*-------------------------------------------
+  Download 1000G data needed to run hapgen2  
+---------------------------------------------*/
+
+/* process download_1000G {
+    label "high_memory"
+    publishDir "${params.outdir}/1000G-data", mode: "copy"
+    
+    output:
+    file("*") into downloaded_1000G_ch
+    
+    script:
+    """
+    wget ${params.reference_1000G_dir}
+    tar zxvf ALL_1000G_phase1integrated_v3_impute.tgz
+    """
+} */
+
+
+
 /*------------------------------------------------
   Simulating .gen and .sample files using hapgen2  
 --------------------------------------------------*/
 
 process simulate_gen_and_sample {
+    label "high_memory"
     publishDir "${params.outdir}/simulated_hapgen", mode: "copy"
     
     input:
