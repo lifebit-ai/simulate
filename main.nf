@@ -56,6 +56,8 @@ summary['User']             = workflow.userName
 
 summary['reference_1000G_dir']  = params.reference_1000G_dir
 summary['legend_for_hapgen2']   = params.legend_for_hapgen2
+summary['simulate_vcf']         = params.simulate_vcf
+summary['simulate_plink']       = params.simulate_plink
 
 log.info summary.collect { k,v -> "${k.padRight(18)}: $v" }.join("\n")
 log.info "-\033[2m--------------------------------------------------\033[0m-"
@@ -165,23 +167,25 @@ process simulate_gen_and_sample {
   Simulating VCF files (based on simulated .gen files) 
 -------------------------------------------------------*/
 
-process simulate_vcf {
-    publishDir "${params.outdir}/simulated_vcf", mode: "copy"
+if (params.simulate_vcf){
+    process simulate_vcf {
+        publishDir "${params.outdir}/simulated_vcf", mode: "copy"
 
-    input:
-    tuple file(gen), file(sample) from simulated_gen_for_vcf_ch
+        input:
+        tuple file(gen), file(sample) from simulated_gen_for_vcf_ch
 
-    output:
-    file("*") into simulated_vcf_ch
+        output:
+        file("*") into simulated_vcf_ch
 
-    shell:
-    '''
-    plink2 \
-    --gen !{gen} ref-unknown \
-    --sample !{sample} \
-    --recode vcf \
-    --out !{gen} \
-    '''
+        shell:
+        '''
+        plink2 \
+        --gen !{gen} ref-unknown \
+        --sample !{sample} \
+        --recode vcf \
+        --out !{gen} \
+        '''
+        }
 }
 
 
@@ -190,23 +194,25 @@ process simulate_vcf {
   Simulating PLINK files (based on simulated .gen files) 
 -------------------------------------------------------*/
 
-process simulate_plink {
-    publishDir "${params.outdir}/simulated_plink", mode: "copy"
+if (params.simulate_plink){
+    process simulate_plink {
+        publishDir "${params.outdir}/simulated_plink", mode: "copy"
 
-    input:
-    tuple file(gen), file(sample) from simulated_gen_for_plink_ch
+        input:
+        tuple file(gen), file(sample) from simulated_gen_for_plink_ch
 
-    output:
-    file("*.{bed,bim,fam}") into simulated_plink_ch
+        output:
+        file("*.{bed,bim,fam}") into simulated_plink_ch
 
-    shell:
-    '''
-    plink2 \
-    --gen !{gen} ref-unknown \
-    --sample !{sample} \
-    --make-bed \
-    --out !{gen} \
-    '''
+        shell:
+        '''
+        plink2 \
+        --gen !{gen} ref-unknown \
+        --sample !{sample} \
+        --make-bed \
+        --out !{gen} \
+        '''
+    }
 }
 
 
