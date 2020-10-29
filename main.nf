@@ -55,8 +55,6 @@ summary['Script dir']       = workflow.projectDir
 summary['User']             = workflow.userName
 
 summary['reference_1000G_dir']  = params.reference_1000G_dir
-summary['genetic_map_pattern']  = params.genetic_map_pattern
-summary['hapmap_pattern']       = params.hapmap_pattern
 summary['legend_for_hapgen2']   = params.legend_for_hapgen2
 
 log.info summary.collect { k,v -> "${k.padRight(18)}: $v" }.join("\n")
@@ -64,23 +62,16 @@ log.info "-\033[2m--------------------------------------------------\033[0m-"
 
 
 
-/*------------------
-  Setting up inputs  
---------------------*/
-
-// Define range of chromosomes
-
-listofchromosomes = 1..22
-
-// Make variable based on name of directory
-
-ref_path = file(params.reference_1000G_dir)
-
-// Setting up legend hapgen2 files
+/*-------------------------------
+  Setting up legend hapgen2 files  
+---------------------------------*/
 
 Channel
   .fromPath(params.legend_for_hapgen2, checkIfExists: true)
-  .ifEmpty { exit 1, "Legend files for running Hapgen2 not found: ${params.legend_for_hapgen2}" }
+  .map { file -> 
+       def key = file.name.toString().tokenize('-').get(0)
+       return tuple(key, file)
+   }
   .set { legend_for_hapgen2_ch }
 
 
@@ -89,19 +80,34 @@ Channel
   Download 1000G data needed to run hapgen2  
 ---------------------------------------------*/
 
-/* process download_1000G {
+process download_1000G {
     label "high_memory"
     publishDir "${params.outdir}/1000G-data", mode: "copy"
     
     output:
-    file("*") into downloaded_1000G_ch
-    
+    file("*combined_b37.txt") into downloaded_1000G_genetic_map_ch
+    file("*impute.hap.gz") into downloaded_1000G_hap_ch
+
     script:
     """
     wget ${params.reference_1000G_dir}
-    tar zxvf ALL_1000G_phase1integrated_v3_impute.tgz
+    tar zxvf ALL_1000G_phase1integrated_v3_impute.tgz --strip-components 1
     """
-} */
+}
+
+downloaded_1000G_genetic_map_ch
+    .map { file -> 
+       def key = file.name.toString().tokenize('_').get(2)
+       return tuple(key, file)
+    }
+    .set { genetic_map_ch }
+
+downloaded_1000G_hap_ch
+    .map { file -> 
+       def key = file.name.toString().tokenize('_').get(4)
+       return tuple(key, file)
+    }
+    .set { hap_ch }
 
 
 
@@ -109,49 +115,47 @@ Channel
   Simulating .gen and .sample files using hapgen2  
 --------------------------------------------------*/
 
+// Combine all inputs for hapgen2
+all_ref_ch = genetic_map_ch.join(hap_ch)
+all_hapgen_inputs_ch = all_ref_ch.join(legend_for_hapgen2_ch)
+
 process simulate_gen_and_sample {
     label "high_memory"
     publishDir "${params.outdir}/simulated_hapgen", mode: "copy"
     
     input:
-    file(legend) from legend_for_hapgen2_ch
-    path(ref_path)
+    tuple val(chr), file(map), file(hap), file(leg) from all_hapgen_inputs_ch
 
     output:
     file("*{simulated_hapgen-updated.gen,simulated_hapgen-updated.sample}") into (simulated_gen_for_vcf_ch, simulated_gen_for_plink_ch)
 
     shell:
-    chromosome = legend.baseName.replaceAll("chr","").split("-")[0]
-    position = legend.baseName.split("-")[1]
-
-    dir = "$baseDir/testdata/1000G-data/ALL_1000G_phase1integrated_v3_impute/" // Not ideal - hardcoded
-    hapfile = file(dir +  "/" + sprintf(params.hapmap_pattern, chromosome))
-    genetic_map_file = file(dir + "/" + sprintf(params.genetic_map_pattern, chromosome))
+    position = leg.baseName.split("-")[1]
+    unzipped_hap = hap.simpleName
     '''
     # Gunzip the relevant hap file
-    if [ ! -f !{hapfile} ]; then
-        gunzip !{hapfile}.gz
-    fi
+    gunzip !{hap}
+ 
     
     # Run hapgen2
     hapgen2  \
-    -m !{genetic_map_file} \
-    -l !{legend} \
-    -h !{hapfile} \
-    -o chr!{chromosome}-simulated_hapgen \
+    -m !{map} \
+    -l !{leg} \
+    -h !{hap}.hap \
+    -o !{chr}-simulated_hapgen \
     -n 10 0 \
     -dl !{position} 0 0 0 \
     -no_haps_output
 
     # Rename output files (phenotypes are not relevant at this stage)
-    mv chr!{chromosome}-simulated_hapgen.controls.gen chr!{chromosome}-simulated_hapgen.gen
-    mv chr!{chromosome}-simulated_hapgen.controls.sample chr!{chromosome}-simulated_hapgen.sample
+    mv !{chr}-simulated_hapgen.controls.gen !{chr}-simulated_hapgen.gen
+    mv !{chr}-simulated_hapgen.controls.sample !{chr}-simulated_hapgen.sample
 
     # Update/correct the output files:
     # (1) Replace fake chromosome names (hapgen2 outputs: "snp_0", "snp_1" instead of a unique chromosome name)
     # (2) Remove the dash from the sample names (but not the header) - required for downstream PLINK steps
-    awk '$1=!{chromosome}' chr!{chromosome}-simulated_hapgen.gen > chr!{chromosome}-simulated_hapgen-updated.gen
-    sed '1d' chr!{chromosome}-simulated_hapgen.sample | sed 's/_//g' | awk 'BEGIN{print "ID_1 ID_2 missing pheno"}{print}' > chr!{chromosome}-simulated_hapgen-updated.sample
+    awk '$1=!{chr}' !{chr}-simulated_hapgen.gen > !{chr}-simulated_hapgen-updated.gen
+    sed '1d' !{chr}-simulated_hapgen.sample | sed 's/_//g' | awk 'BEGIN{print "ID_1 ID_2 missing pheno"}{print}' > !{chr}-simulated_hapgen-updated.sample
     '''
 }
 
