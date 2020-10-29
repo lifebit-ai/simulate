@@ -1,17 +1,30 @@
-FROM nfcore/base:1.10.2
-LABEL authors="Magda Meier" \
-      description="Docker image containing all software requirements for the lifebit-ai/simulate pipeline"
+FROM ubuntu@sha256:6654ae91f6ffadc48279273becce4ceba3c8f7cd312230f28b3082ecb2d3dec5
 
-# Install the conda environment
-COPY environment.yml /
-RUN conda env create --quiet -f /environment.yml && conda clean -a
+LABEL description="Docker image containing all requirements for lifebit-ai/simulate" \
+      author="magda@lifebit.ai"
 
-# Add conda installation dir to PATH (instead of doing 'conda activate')
-ENV PATH /opt/conda/envs/nf-core-simulate-1.0dev/bin:$PATH
+RUN apt-get update -y  \ 
+    && apt-get install -y wget zip procps \
+    && rm -rf /var/lib/apt/lists/*
 
-# Dump the details of the installed packages to a file for posterity
-RUN conda env export --name nf-core-simulate-1.0dev > nf-core-simulate-1.0dev.yml
+# Install hapgen2
+RUN cd opt/ \
+    && wget https://mathgen.stats.ox.ac.uk/genetics_software/hapgen/download/builds/x86_64/v2.1.2/hapgen2_x86_64.tar.gz \
+    && tar -xzvf hapgen2_x86_64.tar.gz
 
-# Instruct R processes to use these empty files instead of clashing with a local version
-RUN touch .Rprofile
-RUN touch .Renviron
+ENV PATH /opt:$PATH
+
+# Install plink 2
+RUN wget http://s3.amazonaws.com/plink2-assets/alpha2/plink2_linux_x86_64.zip \
+    && unzip plink2_linux_x86_64.zip -d plink2 \
+    && rm plink2_linux_x86_64.zip
+
+ENV PATH /plink2:$PATH
+
+USER root
+
+WORKDIR /data/
+
+CMD ["bash"]
+
+
