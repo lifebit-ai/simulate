@@ -97,7 +97,7 @@ process simulate_gen_and_sample {
     path(ref_path)
 
     output:
-    file("*{simulated_hapgen-updated.gen,simulated_hapgen-updated.sample}") into simulated_gen_ch
+    file("*{simulated_hapgen-updated.gen,simulated_hapgen-updated.sample}") into (simulated_gen_for_vcf_ch, simulated_gen_for_plink_ch)
 
     shell:
     chromosome = legend.baseName.replaceAll("chr","").split("-")[0]
@@ -144,7 +144,7 @@ process simulate_vcf {
     publishDir "${params.outdir}/simulated_vcf", mode: "copy"
 
     input:
-    tuple file(gen), file(sample) from simulated_gen_ch
+    tuple file(gen), file(sample) from simulated_gen_for_vcf_ch
 
     output:
     file("*") into simulated_vcf_ch
@@ -155,6 +155,31 @@ process simulate_vcf {
     --gen !{gen} ref-unknown \
     --sample !{sample} \
     --recode vcf \
+    --out !{gen} \
+    '''
+}
+
+
+
+/*-----------------------------------------------------
+  Simulating PLINK files (based on simulated .gen files) 
+-------------------------------------------------------*/
+
+process simulate_plink {
+    publishDir "${params.outdir}/simulated_plink", mode: "copy"
+
+    input:
+    tuple file(gen), file(sample) from simulated_gen_for_plink_ch
+
+    output:
+    file("*.{bed,bim,fam}") into simulated_plink_ch
+
+    shell:
+    '''
+    plink2 \
+    --gen !{gen} ref-unknown \
+    --sample !{sample} \
+    --make-bed \
     --out !{gen} \
     '''
 }
