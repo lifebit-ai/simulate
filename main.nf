@@ -25,7 +25,7 @@ def helpMessage() {
     nextflow run main.nf --simulate_vcf true --simulate_plink true
 
     Essential parameters:
-    
+
     --simulate_vcf:        whether you wish to simulate VCF files (default: false)
     --simulate_plink:      whether you wish to simulate PLINK files (default: false)           
 
@@ -142,12 +142,11 @@ process simulate_gen_and_sample {
     # Gunzip the relevant hap file
     gunzip !{hap}
  
-    
     # Run hapgen2
     hapgen2  \
     -m !{map} \
     -l !{leg} \
-    -h !{hap}.hap \
+    -h !{unzipped_hap} \
     -o !{chr}-simulated_hapgen \
     -n 10 0 \
     -dl !{position} 0 0 0 \
