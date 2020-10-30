@@ -22,8 +22,12 @@ def helpMessage() {
     Usage:
 
     The typical command for running the pipeline is as follows:
+    nextflow run main.nf --simulate_vcf true --simulate_plink true
 
-    Options:           
+    Essential parameters:
+    
+    --simulate_vcf:        whether you wish to simulate VCF files (default: false)
+    --simulate_plink:      whether you wish to simulate PLINK files (default: false)           
 
     """.stripIndent()
 }
