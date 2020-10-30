@@ -7,3 +7,6 @@ tests/
 testing/
 testing*
 *.pyc
+testdata/1000G-data/
+assets/legend_for_hapgen2/72.ftdna-illumina.36.vcf
+assets/legend_for_hapgen2/72.ftdna-illumina.36.vcf.gz.tbi
