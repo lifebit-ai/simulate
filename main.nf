@@ -173,7 +173,7 @@ process simulate_gen_and_sample {
   Simulating VCF files (based on simulated .gen files) 
 -------------------------------------------------------*/
 
-/* if (params.simulate_vcf){
+if (params.simulate_vcf){
     process simulate_vcf {
         publishDir "${params.outdir}/simulated_vcf", mode: "copy"
 
@@ -192,7 +192,7 @@ process simulate_gen_and_sample {
         --out !{gen} \
         '''
         }
-} */
+}
 
 
 
@@ -200,7 +200,7 @@ process simulate_gen_and_sample {
   Simulating PLINK files (based on simulated .gen files) 
 -------------------------------------------------------*/
 
-/* if (params.simulate_plink){
+if (params.simulate_plink){
     process simulate_plink {
         publishDir "${params.outdir}/simulated_plink", mode: "copy"
 
@@ -219,6 +219,6 @@ process simulate_gen_and_sample {
         --out !{gen} \
         '''
     }
-} */
+}
 
 
