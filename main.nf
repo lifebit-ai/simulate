@@ -143,7 +143,7 @@ process simulate_gen_and_sample {
     unzipped_hap = hap.baseName
     '''
     # Gunzip the relevant hap file
-    gunzip !{hap}
+    gunzip -f !{hap}
  
     # Run hapgen2
     hapgen2  \
@@ -162,7 +162,7 @@ process simulate_gen_and_sample {
     # Update/correct the output files:
     # (1) Replace fake chromosome names (hapgen2 outputs: "snp_0", "snp_1" instead of a unique chromosome name)
     # (2) Remove the dash from the sample names (but not the header) - required for downstream PLINK steps
-    awk '$1=!{chr}' !{chr}-simulated_hapgen.gen > !{chr}-simulated_hapgen-updated.gen
+    awk '$1="!{chr}"' !{chr}-simulated_hapgen.gen > !{chr}-simulated_hapgen-updated.gen
     sed '1d' !{chr}-simulated_hapgen.sample | sed 's/_//g' | awk 'BEGIN{print "ID_1 ID_2 missing pheno"}{print}' > !{chr}-simulated_hapgen-updated.sample
     '''
 }
