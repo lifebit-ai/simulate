@@ -73,7 +73,7 @@ log.info "-\033[2m--------------------------------------------------\033[0m-"
 ---------------------------------*/
 
 Channel
-  .fromPath("${params.legend_for_hapgen2}/*.{leg}")
+  .fromPath("${params.legend_for_hapgen2}/*leg")
   .map { file -> 
        def key = file.name.toString().tokenize('-').get(0)
        return tuple(key, file)
@@ -101,7 +101,9 @@ process download_1000G {
     """
 }
 
+
 downloaded_1000G_genetic_map_ch
+    .flatMap { it -> it }
     .map { file -> 
        def key = file.name.toString().tokenize('_').get(2)
        return tuple(key, file)
@@ -109,6 +111,7 @@ downloaded_1000G_genetic_map_ch
     .set { genetic_map_ch }
 
 downloaded_1000G_hap_ch
+    .flatMap { it -> it }
     .map { file -> 
        def key = file.name.toString().tokenize('_').get(4)
        return tuple(key, file)
@@ -137,7 +140,7 @@ process simulate_gen_and_sample {
 
     shell:
     position = leg.baseName.split("-")[1]
-    unzipped_hap = hap.simpleName
+    unzipped_hap = hap.baseName
     '''
     # Gunzip the relevant hap file
     gunzip !{hap}
@@ -170,7 +173,7 @@ process simulate_gen_and_sample {
   Simulating VCF files (based on simulated .gen files) 
 -------------------------------------------------------*/
 
-if (params.simulate_vcf){
+/* if (params.simulate_vcf){
     process simulate_vcf {
         publishDir "${params.outdir}/simulated_vcf", mode: "copy"
 
@@ -189,7 +192,7 @@ if (params.simulate_vcf){
         --out !{gen} \
         '''
         }
-}
+} */
 
 
 
@@ -197,7 +200,7 @@ if (params.simulate_vcf){
   Simulating PLINK files (based on simulated .gen files) 
 -------------------------------------------------------*/
 
-if (params.simulate_plink){
+/* if (params.simulate_plink){
     process simulate_plink {
         publishDir "${params.outdir}/simulated_plink", mode: "copy"
 
@@ -216,6 +219,6 @@ if (params.simulate_plink){
         --out !{gen} \
         '''
     }
-}
+} */
 
 
