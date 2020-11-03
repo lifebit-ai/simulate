@@ -25,11 +25,13 @@ def helpMessage() {
     nextflow run main.nf --num_participants 10
 
     Essential parameters:
-    --num_participants    number of participants to simulate (default: 10)
+    --num_participants              number of participants to simulate (default: 10)
 
     Optional parameters:
-    --simulate_vcf        whether you wish to simulate VCF files (default: false)
-    --simulate_plink      whether you wish to simulate PLINK files (default: false)           
+    --effective_population_size     population size (for hapgen2)
+    --mutation_rate                 mutation rate (for hapgen2)
+    --simulate_vcf                  whether you wish to simulate VCF files (default: false)
+    --simulate_plink                whether you wish to simulate PLINK files (default: false)           
 
     """.stripIndent()
 }
@@ -60,25 +62,34 @@ summary['Working dir']      = workflow.workDir
 summary['Script dir']       = workflow.projectDir
 summary['User']             = workflow.userName
 
-summary['reference_1000G_dir']  = params.reference_1000G_dir
-summary['legend_for_hapgen2']   = params.legend_for_hapgen2
-summary['num_participants']     = params.num_participants
-summary['simulate_vcf']         = params.simulate_vcf
-summary['simulate_plink']       = params.simulate_plink
+summary['reference_1000G_dir']        = params.reference_1000G_dir
+summary['legend_for_hapgen2']         = params.legend_for_hapgen2
+summary['num_participants']           = params.num_participants
+summary['effective_population_size']  = params.effective_population_size
+summary['mutation_rate']              = params.mutation_rate
+summary['simulate_vcf']               = params.simulate_vcf
+summary['simulate_plink']             = params.simulate_plink
 
 log.info summary.collect { k,v -> "${k.padRight(18)}: $v" }.join("\n")
 log.info "-\033[2m--------------------------------------------------\033[0m-"
 
 
 
-/*--------------------------------------
-  Setting up parameters and extra flags
-----------------------------------------*/
+/*----------------------------------------------
+  Setting up parameters and extra optional flags
+------------------------------------------------*/
 
 if (!params.num_participants) {
   exit 1, "You have not provided a number of participants to simulate. \
   \nPlease provide a number using the --num_participants parameter."
 }
+
+// Initialise variable to store optional parameters
+extra_hapgen2_flags = ""
+
+// Optional hapgen2 options
+if ( params.effective_population_size ) { extra_hapgen2_flags += " -Ne ${params.effective_population_size}" }
+if ( params.mutation_rate ) { extra_hapgen2_flags += " -theta ${params.mutation_rate}" }
 
 
 
@@ -114,7 +125,6 @@ process download_1000G {
     tar zxvf ALL_1000G_phase1integrated_v3_impute.tgz --strip-components 1
     """
 }
-
 
 downloaded_1000G_genetic_map_ch
     .flatMap { it -> it }
@@ -167,7 +177,7 @@ process simulate_gen_and_sample {
     -o !{chr}-simulated_hapgen \
     -n !{params.num_participants} 0 \
     -dl !{position} 0 0 0 \
-    -no_haps_output
+    -no_haps_output !{extra_hapgen2_flags}
 
     # Rename output files (phenotypes are not relevant at this stage)
     mv !{chr}-simulated_hapgen.controls.gen !{chr}-simulated_hapgen.gen
