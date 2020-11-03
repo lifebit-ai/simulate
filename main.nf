@@ -165,7 +165,7 @@ process simulate_gen_and_sample {
     -l !{leg} \
     -h !{unzipped_hap} \
     -o !{chr}-simulated_hapgen \
-    -n !{num_participants} 0 \
+    -n !{params.num_participants} 0 \
     -dl !{position} 0 0 0 \
     -no_haps_output
 
