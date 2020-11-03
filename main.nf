@@ -22,12 +22,14 @@ def helpMessage() {
     Usage:
 
     The typical command for running the pipeline is as follows:
-    nextflow run main.nf --simulate_vcf true --simulate_plink true
+    nextflow run main.nf --num_participants 10
 
     Essential parameters:
+    --num_participants    number of participants to simulate (default: 10)
 
-    --simulate_vcf:        whether you wish to simulate VCF files (default: false)
-    --simulate_plink:      whether you wish to simulate PLINK files (default: false)           
+    Optional parameters:
+    --simulate_vcf        whether you wish to simulate VCF files (default: false)
+    --simulate_plink      whether you wish to simulate PLINK files (default: false)           
 
     """.stripIndent()
 }
@@ -60,11 +62,23 @@ summary['User']             = workflow.userName
 
 summary['reference_1000G_dir']  = params.reference_1000G_dir
 summary['legend_for_hapgen2']   = params.legend_for_hapgen2
+summary['num_participants']     = params.num_participants
 summary['simulate_vcf']         = params.simulate_vcf
 summary['simulate_plink']       = params.simulate_plink
 
 log.info summary.collect { k,v -> "${k.padRight(18)}: $v" }.join("\n")
 log.info "-\033[2m--------------------------------------------------\033[0m-"
+
+
+
+/*--------------------------------------
+  Setting up parameters and extra flags
+----------------------------------------*/
+
+if (!params.num_participants) {
+  exit 1, "You have not provided a number of participants to simulate. \
+  \nPlease provide a number using the --num_participants parameter."
+}
 
 
 
@@ -151,7 +165,7 @@ process simulate_gen_and_sample {
     -l !{leg} \
     -h !{unzipped_hap} \
     -o !{chr}-simulated_hapgen \
-    -n 10 0 \
+    -n !{num_participants} 0 \
     -dl !{position} 0 0 0 \
     -no_haps_output
 

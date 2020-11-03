@@ -22,12 +22,15 @@ nextflow run main.nf \
 --simulate_vcf true \
 --simulate_plink true
 ```
-```
 
 ## 4 - Essential parameters
 
-- **--simulate_vcf**: whether you wish to simulate VCF files (default: false)
+- **--num_participants**: number of participants to simulate
 
-- **--simulate_plink**: whether you wish to simulate PLINK files (default: false)
+## 5 - Optional parameters
 
-## 4 - Other parameters
+- **--simulate_vcf**: whether you wish to simulate VCF files (default: true)
+
+- **--simulate_plink**: whether you wish to simulate PLINK files (default: true)
+
+
