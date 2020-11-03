@@ -27,9 +27,9 @@ nextflow run main.nf --num_participants 10
 
 ## 5 - Optional parameters
 
-- **--effective_population_size**: population size (for hapgen2)
+- **--effective_population_size**: population size (for hapgen2) (default: 11418)
   
-- **--mutation_rate**: mutation rate (for hapgen2)
+- **--mutation_rate**: mutation rate (for hapgen2) (default: -1)
 
 - **--simulate_vcf**: whether you wish to simulate VCF files (default: true)
 
