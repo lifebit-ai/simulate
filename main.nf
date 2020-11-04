@@ -105,10 +105,10 @@ if ( params.effective_population_size ) { extra_hapgen2_flags += " -Ne ${params.
 if ( params.mutation_rate ) { extra_hapgen2_flags += " -theta ${params.mutation_rate}" }
 
 // Optional gtca options
-if ( params.gwas_quantitive ) { extra_gcta_flags += " --simu-qt \ \n" }
-if ( params.gwas_heritability ) { extra_gcta_flags += " --simu-hsq ${params.gwas_heritability}\ \n" }
-if ( params.gwas_disease_prevalance ) { extra_gcta_flags += " --simu-k ${params.gwas_disease_prevalance}\ \n" }
-if ( params.gwas_simulation_replicates ) { extra_gcta_flags += " --simu-rep ${params.gwas_simulation_replicates}\ \n" }
+if ( params.gwas_quantitive ) { extra_gcta_flags += " --simu-qt \n" }
+if ( params.gwas_heritability ) { extra_gcta_flags += " --simu-hsq ${params.gwas_heritability} \n" }
+if ( params.gwas_disease_prevalance ) { extra_gcta_flags += " --simu-k ${params.gwas_disease_prevalance} \n" }
+if ( params.gwas_simulation_replicates ) { extra_gcta_flags += " --simu-rep ${params.gwas_simulation_replicates} \n" }
 
 
 
