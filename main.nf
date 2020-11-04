@@ -236,12 +236,13 @@ if (params.simulate_plink){
         file("*.{bed,bim,fam}") into simulated_plink_ch
 
         shell:
+        out_name=gen.baseName
         '''
         plink2 \
         --gen !{gen} ref-unknown \
         --sample !{sample} \
         --make-bed \
-        --out !{gen} \
+        --out !{out_name} \
         '''
     }
 }
