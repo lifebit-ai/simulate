@@ -290,7 +290,7 @@ if ( params.simulate_plink && params.simulate_gwas_sum_stats && params.gwas_case
         # Run GCTA
         gcta64 \
         --bfile !{bfile_name} \
-        --simu-cc !{params.gwas_cases_control} \
+        --simu-cc !{params.gwas_cases_controls} \
         --simu-causal-loci !{chr}-causal.snplist \
         --out !{chr}-gwas-statistics !{extra_gcta_flags} \
         '''
