@@ -105,10 +105,10 @@ if ( params.effective_population_size ) { extra_hapgen2_flags += " -Ne ${params.
 if ( params.mutation_rate ) { extra_hapgen2_flags += " -theta ${params.mutation_rate}" }
 
 // Optional gtca options
-if ( params.gwas_quantitive ) { extra_gcta_flags += " --simu-qt " }
-if ( params.gwas_heritability ) { extra_gcta_flags += " --simu-hsq ${params.gwas_heritability} " }
-if ( params.gwas_disease_prevelance ) { extra_gcta_flags += " --simu-k ${params.gwas_disease_prevelance} " }
-if ( params.gwas_simulation_replicates ) { extra_gcta_flags += " --simu-rep ${params.gwas_simulation_replicates} " }
+if ( params.gwas_quantitive ) { extra_gcta_flags += " --simu-qt \n" }
+if ( params.gwas_heritability ) { extra_gcta_flags += " --simu-hsq ${params.gwas_heritability}\n" }
+if ( params.gwas_disease_prevelance ) { extra_gcta_flags += " --simu-k ${params.gwas_disease_prevelance}\n" }
+if ( params.gwas_simulation_replicates ) { extra_gcta_flags += " --simu-rep ${params.gwas_simulation_replicates}\n" }
 
 
 
@@ -273,30 +273,31 @@ if (params.simulate_plink){
 --------------------------------------------------*/
 
 if ( params.simulate_plink && params.simulate_gwas_sum_stats && params.gwas_cases && params.gwas_controls){
-  process simulate_gwas_sum_stats {
-        publishDir "${params.outdir}/simulated_gwas_sum_stats", mode: "copy"
+process simulate_gwas_sum_stats {
+publishDir "${params.outdir}/simulated_gwas_sum_stats", mode: "copy"
 
-        input:
-        tuple file(bed), file(bim), file(fam) from simulated_plink_ch
+input:
+tuple file(bed), file(bim), file(fam) from simulated_plink_ch
 
-        output:
-        file("*") into simulated_gwas_sum_stats_ch
+output:
+file("*") into simulated_gwas_sum_stats_ch
 
-        shell:
-        bfile_name=bed.baseName
-        chr=bfile_name.split("-")[0]
-        '''
-        # Create list of causal SNPs required by GCTA
-        cut -f2 !{bim} | head -n 10 > !{chr}-causal.snplist
+shell:
+bfile_name=bed.baseName
+chr=bfile_name.split("-")[0]
+'''
+# Create list of causal SNPs required by GCTA
+cut -f2 !{bim} | head -n 10 > !{chr}-causal.snplist
 
-        # Run GCTA
-        gcta64 \
-        --bfile !{bfile_name} \
-        --simu-cc !{params.gwas_cases} !{params.gwas_controls} \
-        --simu-causal-loci !{chr}-causal.snplist \
-        --out !{chr}-gwas-statistics !{extra_gcta_flags} \
-        '''
-  }
+# Run GCTA
+gcta64 \
+--bfile !{bfile_name} \
+--simu-cc !{params.gwas_cases} !{params.gwas_controls} \
+--simu-causal-loci !{chr}-causal.snplist \
+--out !{chr}-gwas-statistics \
+!{extra_gcta_flags}
+'''
+}
 }
 
 
