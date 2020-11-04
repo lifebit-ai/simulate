@@ -33,6 +33,11 @@ def helpMessage() {
     --simulate_vcf                  simulate VCF files (default: false)
     --simulate_plink                simulate PLINK files (default: false)           
     --simulate_gwas_sum_stats       simulate GWAS summary statistics (default: false)
+    --gwas_cases_controls           the number of cases and controls to simulate for the GWAS summary statistics (need to add up to total of --num_participants )
+    --gwas_quantitive               simulate GWAS summary statistics for a quantitative trait (default: false)
+    --gwas_heritability             heritibility for simulating GWAS summary statistics (default: 0.1)
+    --gwas_disease_prevelance       disease prevalence for simulating GWAS summary statistics (default: 0.1)
+    --gwas_simulation_replicates    number of simulation replicates for simulating GWAS summary statistics (default: 1)
     """.stripIndent()
 }
 
@@ -70,6 +75,10 @@ summary['mutation_rate']              = params.mutation_rate
 summary['simulate_vcf']               = params.simulate_vcf
 summary['simulate_plink']             = params.simulate_plink
 summary['simulate_gwas_sum_stats']    = params.simulate_gwas_sum_stats
+summary['gwas_cases_controls']        = params.gwas_cases_controls
+summary['gwas_quantitive']            = params.gwas_quantitive
+summary['gwas_disease_prevelance']    = params.gwas_disease_prevelance
+summary['gwas_simulation_replicates'] = params.gwas_simulation_replicates
 
 log.info summary.collect { k,v -> "${k.padRight(18)}: $v" }.join("\n")
 log.info "-\033[2m--------------------------------------------------\033[0m-"
@@ -87,10 +96,17 @@ if (!params.num_participants) {
 
 // Initialise variable to store optional parameters
 extra_hapgen2_flags = ""
+extra_gcta_flags = ""
 
 // Optional hapgen2 options
 if ( params.effective_population_size ) { extra_hapgen2_flags += " -Ne ${params.effective_population_size}" }
 if ( params.mutation_rate ) { extra_hapgen2_flags += " -theta ${params.mutation_rate}" }
+
+// Optional gtca options
+if ( params.gwas_quantitive ) { extra_gcta_flags += " --simu-qt " }
+if ( params.gwas_heritability ) { extra_gcta_flags += " --simu-hsq ${params.gwas_heritability} " }
+if ( params.gwas_disease_prevelance ) { extra_gcta_flags += " --simu-k ${params.gwas_disease_prevelance} " }
+if ( params.gwas_simulation_replicates ) { extra_gcta_flags += " --simu-rep ${params.gwas_simulation_replicates} " }
 
 
 
@@ -254,7 +270,7 @@ if (params.simulate_plink){
   Simulating GWAS summary statistics (using GCTA) 
 --------------------------------------------------*/
 
-if ( params.simulate_plink && params.simulate_gwas_sum_stats ){
+if ( params.simulate_plink && params.simulate_gwas_sum_stats && params.gwas_cases_controls){
   process simulate_gwas_sum_stats {
         publishDir "${params.outdir}/simulated_gwas_sum_stats", mode: "copy"
 
@@ -274,9 +290,9 @@ if ( params.simulate_plink && params.simulate_gwas_sum_stats ){
         # Run GCTA
         gcta64 \
         --bfile !{bfile_name} \
-        --simu-cc 15 15 \
+        --simu-cc !{params.gwas_cases_control} \
         --simu-causal-loci !{chr}-causal.snplist \
-        --out !{chr}-gwas-statistics \
+        --out !{chr}-gwas-statistics !{extra_gcta_flags} \
         '''
   }
 }

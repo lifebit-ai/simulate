@@ -37,5 +37,14 @@ nextflow run main.nf --num_participants 10
 
 - **--simulate_gwas_sum_stats**: simulate GWAS summary statistics (default: false)
 
+**--gwas_cases_controls**: the number of cases and controls to simulate for the GWAS summary statistics (need to add up to total of --num_participants )
 
+**--gwas_quantitive**: simulate GWAS summary statistics for a quantitative trait (default: false)
+
+**--gwas_heritability**: heritibility for simulating GWAS summary statistics (default: 0.1)
+
+**--gwas_disease_prevelance**: disease prevalence for simulating GWAS summary statistics (default: 0.1)
+
+**--gwas_simulation_replicates**: number of simulation replicates for simulating GWAS summary statistics (default: 1)
+    
 
