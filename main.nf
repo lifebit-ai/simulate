@@ -105,10 +105,10 @@ if ( params.effective_population_size ) { extra_hapgen2_flags += " -Ne ${params.
 if ( params.mutation_rate ) { extra_hapgen2_flags += " -theta ${params.mutation_rate}" }
 
 // Optional gtca options
-if ( params.gwas_quantitive ) { extra_gcta_flags += " --simu-qt \n" }
-if ( params.gwas_heritability ) { extra_gcta_flags += " --simu-hsq ${params.gwas_heritability} \n" }
-if ( params.gwas_disease_prevalance ) { extra_gcta_flags += " --simu-k ${params.gwas_disease_prevalance} \n" }
-if ( params.gwas_simulation_replicates ) { extra_gcta_flags += " --simu-rep ${params.gwas_simulation_replicates} \n" }
+if ( params.gwas_quantitive ) { extra_gcta_flags += " --simu-qt " }
+if ( params.gwas_heritability ) { extra_gcta_flags += " --simu-hsq ${params.gwas_heritability} " }
+if ( params.gwas_disease_prevalance ) { extra_gcta_flags += " --simu-k ${params.gwas_disease_prevalance} " }
+if ( params.gwas_simulation_replicates ) { extra_gcta_flags += " --simu-rep ${params.gwas_simulation_replicates} " }
 
 
 
@@ -116,8 +116,22 @@ if ( params.gwas_simulation_replicates ) { extra_gcta_flags += " --simu-rep ${pa
   Setting up legend hapgen2 files  
 ---------------------------------*/
 
-Channel
-  .fromPath("${params.legend_for_hapgen2}/*{leg}")
+process download_leg_files {
+    label "high_memory"
+    publishDir "${params.outdir}/leg-data", mode: "copy"
+    
+    output:
+    file("*leg") into downloaded_leg_files_ch
+
+    script:
+    """
+    wget ${params.legend_for_hapgen2}
+    tar xvzf all_leg.gz -C .
+    """
+}
+
+downloaded_leg_files_ch
+  .flatMap { it -> it }
   .map { file -> 
        def key = file.name.toString().tokenize('-').get(0)
        return tuple(key, file)
@@ -273,31 +287,31 @@ if (params.simulate_plink){
 --------------------------------------------------*/
 
 if ( params.simulate_plink && params.simulate_gwas_sum_stats && params.gwas_cases && params.gwas_controls){
-process simulate_gwas_sum_stats {
-publishDir "${params.outdir}/simulated_gwas_sum_stats", mode: "copy"
+  process simulate_gwas_sum_stats {
+    publishDir "${params.outdir}/simulated_gwas_sum_stats", mode: "copy"
 
-input:
-tuple file(bed), file(bim), file(fam) from simulated_plink_ch
+   input:
+   tuple file(bed), file(bim), file(fam) from simulated_plink_ch
 
-output:
-file("*") into simulated_gwas_sum_stats_ch
+   output:
+   file("*") into simulated_gwas_sum_stats_ch
 
-shell:
-bfile_name=bed.baseName
-chr=bfile_name.split("-")[0]
-'''
-# Create list of causal SNPs required by GCTA
-cut -f2 !{bim} | head -n 10 > !{chr}-causal.snplist
+  shell:
+  bfile_name=bed.baseName
+  chr=bfile_name.split("-")[0]
+  '''
+  # Create list of causal SNPs required by GCTA
+  cut -f2 !{bim} | head -n 10 > !{chr}-causal.snplist
 
-# Run GCTA
-gcta64 \
---bfile !{bfile_name} \
---simu-cc !{params.gwas_cases} !{params.gwas_controls} \
---simu-causal-loci !{chr}-causal.snplist \
---out !{chr}-gwas-statistics \
-!{extra_gcta_flags}
-'''
-}
+  # Run GCTA
+  gcta64 \
+  --bfile !{bfile_name} \
+  --simu-cc !{params.gwas_cases} !{params.gwas_controls} \
+  --simu-causal-loci !{chr}-causal.snplist \
+  --out !{chr}-gwas-statistics \
+  !{extra_gcta_flags}
+  '''
+  }
 }
 
 
