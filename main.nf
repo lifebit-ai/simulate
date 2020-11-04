@@ -117,7 +117,7 @@ if ( params.gwas_simulation_replicates ) { extra_gcta_flags += " --simu-rep ${pa
 ---------------------------------*/
 
 Channel
-  .fromPath("${params.legend_for_hapgen2}")
+  .fromPath("${params.legend_for_hapgen2}/*{leg}")
   .map { file -> 
        def key = file.name.toString().tokenize('-').get(0)
        return tuple(key, file)
