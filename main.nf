@@ -30,9 +30,9 @@ def helpMessage() {
     Optional parameters:
     --effective_population_size     population size (for hapgen2) (default: 11418)
     --mutation_rate                 mutation rate (for hapgen2) (default: -1)
-    --simulate_vcf                  whether you wish to simulate VCF files (default: false)
-    --simulate_plink                whether you wish to simulate PLINK files (default: false)           
-
+    --simulate_vcf                  simulate VCF files (default: false)
+    --simulate_plink                simulate PLINK files (default: false)           
+    --simulate_gwas_sum_stats       simulate GWAS summary statistics (default: false)
     """.stripIndent()
 }
 
@@ -69,6 +69,7 @@ summary['effective_population_size']  = params.effective_population_size
 summary['mutation_rate']              = params.mutation_rate
 summary['simulate_vcf']               = params.simulate_vcf
 summary['simulate_plink']             = params.simulate_plink
+summary['simulate_gwas_sum_stats']    = params.simulate_gwas_sum_stats
 
 log.info summary.collect { k,v -> "${k.padRight(18)}: $v" }.join("\n")
 log.info "-\033[2m--------------------------------------------------\033[0m-"
@@ -243,6 +244,33 @@ if (params.simulate_plink){
         --out !{gen} \
         '''
     }
+}
+
+
+
+/*------------------------------------------------
+  Simulating GWAS summary statistics (using GCTA) 
+--------------------------------------------------*/
+
+if ( params.simulate_plink && params.simulate_gwas_sum_stats ){
+  process simulate_gwas_sum_stats {
+        publishDir "${params.outdir}/simulated_gwas_sum_stats", mode: "copy"
+
+        input:
+        tuple file(bed), file(bim), file(fam) from simulated_plink_ch
+
+        output:
+        file("*") into simulated_gwas_sum_stats_ch
+
+        shell:
+        bfile_name=bed.baseName
+        '''
+        gcta64 \
+        --bfile !{bfile_name} \
+        --simu-cc 15 15 \
+        --out simulated_gwas \
+        '''
+  }
 }
 
 
