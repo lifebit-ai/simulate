@@ -272,7 +272,7 @@ if (params.simulate_plink){
   Simulating GWAS summary statistics (using GCTA) 
 --------------------------------------------------*/
 
-if ( params.simulate_plink && params.simulate_gwas_sum_stats && params.gwas_cases_controls){
+if ( params.simulate_plink && params.simulate_gwas_sum_stats && params.gwas_cases && params.gwas_controls){
   process simulate_gwas_sum_stats {
         publishDir "${params.outdir}/simulated_gwas_sum_stats", mode: "copy"
 
