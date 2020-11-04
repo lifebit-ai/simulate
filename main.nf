@@ -37,7 +37,7 @@ def helpMessage() {
     --gwas_controls                 the number of controls to simulate for the GWAS summary statistics (the total with cases should match --effective_population_size)
     --gwas_quantitive               simulate GWAS summary statistics for a quantitative trait (default: false)
     --gwas_heritability             heritibility for simulating GWAS summary statistics (default: 0.1)
-    --gwas_disease_prevelance       disease prevalence for simulating GWAS summary statistics (default: 0.1)
+    --gwas_disease_prevalance       disease prevalence for simulating GWAS summary statistics (default: 0.1)
     --gwas_simulation_replicates    number of simulation replicates for simulating GWAS summary statistics (default: 1)
     """.stripIndent()
 }
@@ -79,7 +79,7 @@ summary['simulate_gwas_sum_stats']    = params.simulate_gwas_sum_stats
 summary['gwas_cases']                 = params.gwas_cases
 summary['gwas_controls']              = params.gwas_controls
 summary['gwas_quantitive']            = params.gwas_quantitive
-summary['gwas_disease_prevelance']    = params.gwas_disease_prevelance
+summary['gwas_disease_prevalance']    = params.gwas_disease_prevalance
 summary['gwas_simulation_replicates'] = params.gwas_simulation_replicates
 
 log.info summary.collect { k,v -> "${k.padRight(18)}: $v" }.join("\n")
@@ -105,10 +105,10 @@ if ( params.effective_population_size ) { extra_hapgen2_flags += " -Ne ${params.
 if ( params.mutation_rate ) { extra_hapgen2_flags += " -theta ${params.mutation_rate}" }
 
 // Optional gtca options
-if ( params.gwas_quantitive ) { extra_gcta_flags += " --simu-qt \n" }
-if ( params.gwas_heritability ) { extra_gcta_flags += " --simu-hsq ${params.gwas_heritability}\n" }
-if ( params.gwas_disease_prevelance ) { extra_gcta_flags += " --simu-k ${params.gwas_disease_prevelance}\n" }
-if ( params.gwas_simulation_replicates ) { extra_gcta_flags += " --simu-rep ${params.gwas_simulation_replicates}\n" }
+if ( params.gwas_quantitive ) { extra_gcta_flags += " --simu-qt \ \n" }
+if ( params.gwas_heritability ) { extra_gcta_flags += " --simu-hsq ${params.gwas_heritability}\ \n" }
+if ( params.gwas_disease_prevalance ) { extra_gcta_flags += " --simu-k ${params.gwas_disease_prevalance}\ \n" }
+if ( params.gwas_simulation_replicates ) { extra_gcta_flags += " --simu-rep ${params.gwas_simulation_replicates}\ \n" }
 
 
 
