@@ -209,12 +209,13 @@ if (params.simulate_vcf){
         file("*") into simulated_vcf_ch
 
         shell:
+        out_vcf_name=gen.baseName
         '''
         plink2 \
         --gen !{gen} ref-unknown \
         --sample !{sample} \
         --recode vcf \
-        --out !{gen} \
+        --out !{out_vcf_name} \
         '''
         }
 }
@@ -236,13 +237,13 @@ if (params.simulate_plink){
         file("*.{bed,bim,fam}") into simulated_plink_ch
 
         shell:
-        out_name=gen.baseName
+        out_plink_name=gen.baseName
         '''
         plink2 \
         --gen !{gen} ref-unknown \
         --sample !{sample} \
         --make-bed \
-        --out !{out_name} \
+        --out !{out_plink_name} \
         '''
     }
 }
