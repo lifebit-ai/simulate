@@ -33,7 +33,8 @@ def helpMessage() {
     --simulate_vcf                  simulate VCF files (default: false)
     --simulate_plink                simulate PLINK files (default: false)           
     --simulate_gwas_sum_stats       simulate GWAS summary statistics (default: false)
-    --gwas_cases_controls           the number of cases and controls to simulate for the GWAS summary statistics (need to add up to total of --num_participants )
+    --gwas_cases                    the number of cases to simulate for the GWAS summary statistics (the total with controls should match --effective_population_size)
+    --gwas_controls                 the number of controls to simulate for the GWAS summary statistics (the total with cases should match --effective_population_size)
     --gwas_quantitive               simulate GWAS summary statistics for a quantitative trait (default: false)
     --gwas_heritability             heritibility for simulating GWAS summary statistics (default: 0.1)
     --gwas_disease_prevelance       disease prevalence for simulating GWAS summary statistics (default: 0.1)
@@ -75,7 +76,8 @@ summary['mutation_rate']              = params.mutation_rate
 summary['simulate_vcf']               = params.simulate_vcf
 summary['simulate_plink']             = params.simulate_plink
 summary['simulate_gwas_sum_stats']    = params.simulate_gwas_sum_stats
-summary['gwas_cases_controls']        = params.gwas_cases_controls
+summary['gwas_cases']                 = params.gwas_cases
+summary['gwas_controls']              = params.gwas_controls
 summary['gwas_quantitive']            = params.gwas_quantitive
 summary['gwas_disease_prevelance']    = params.gwas_disease_prevelance
 summary['gwas_simulation_replicates'] = params.gwas_simulation_replicates
@@ -290,7 +292,7 @@ if ( params.simulate_plink && params.simulate_gwas_sum_stats && params.gwas_case
         # Run GCTA
         gcta64 \
         --bfile !{bfile_name} \
-        --simu-cc !{params.gwas_cases_controls} \
+        --simu-cc !{gwas_cases} !{gwas_controls} \
         --simu-causal-loci !{chr}-causal.snplist \
         --out !{chr}-gwas-statistics !{extra_gcta_flags} \
         '''

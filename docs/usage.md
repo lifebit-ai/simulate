@@ -37,7 +37,9 @@ nextflow run main.nf --num_participants 10
 
 - **--simulate_gwas_sum_stats**: simulate GWAS summary statistics (default: false)
 
-**--gwas_cases_controls**: the number of cases and controls to simulate for the GWAS summary statistics (need to add up to total of --num_participants )
+**--gwas_cases**: the number of cases to simulate for the GWAS summary statistics (the total with controls should match --effective_population_size)
+   
+**--gwas_controls**: the number of controls to simulate for the GWAS summary statistics (the total with cases should match --effective_population_size)
 
 **--gwas_quantitive**: simulate GWAS summary statistics for a quantitative trait (default: false)
 

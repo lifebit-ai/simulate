@@ -24,5 +24,3 @@ $ bash make-leg-files.sh -f 72.ftdna-illumina.36.vcf
 ```
 
 
-
-
