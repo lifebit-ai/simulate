@@ -267,9 +267,14 @@ if ( params.simulate_plink && params.simulate_gwas_sum_stats ){
         shell:
         bfile_name=bed.baseName
         '''
+        # Create list of causal SNPs required by GCTA
+        cut -f2 !{bim} | head -n 10 > causal.snplist
+
+        # Run GCTA
         gcta64 \
         --bfile !{bfile_name} \
         --simu-cc 15 15 \
+        --simu-causal-loci causal.snplist \
         --out simulated_gwas \
         '''
   }
