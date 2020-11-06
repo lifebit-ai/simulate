@@ -133,8 +133,8 @@ process download_leg_files {
 downloaded_leg_files_ch
   .flatMap { it -> it }
   .map { file -> 
-       def key = file.name.toString().tokenize('-').get(0)
-       return tuple(key, file)
+       def chr = file.name.toString().tokenize('-').get(0)
+       return tuple(chr, leg_file)
    }
   .set { legend_for_hapgen2_ch }
 
@@ -313,5 +313,4 @@ if ( params.simulate_plink && params.simulate_gwas_sum_stats && params.gwas_case
   '''
   }
 }
-
 
