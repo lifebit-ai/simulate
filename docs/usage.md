@@ -35,7 +35,7 @@ nextflow run main.nf --num_participants 10
 
 - **--simulate_plink**: simulate PLINK files (default: true)
 
-- **--simulate_gwas_sum_stats**: simulate GWAS summary statistics (default: false)
+- **--simulate_gwas_sum_stats**: simulate GWAS summary statistics with GCTA (default: false)
 
 **--gwas_cases**: the number of cases to simulate for the GWAS summary statistics (the total with controls should match --effective_population_size)
    
@@ -49,4 +49,3 @@ nextflow run main.nf --num_participants 10
 
 **--gwas_simulation_replicates**: number of simulation replicates for simulating GWAS summary statistics (default: 1)
     
-
