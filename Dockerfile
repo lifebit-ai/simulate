@@ -21,6 +21,13 @@ RUN wget http://s3.amazonaws.com/plink2-assets/alpha2/plink2_linux_x86_64.zip \
 
 ENV PATH /plink2:$PATH
 
+# Install gcta
+RUN wget https://cnsgenomics.com/software/gcta/bin/gcta_1.93.2beta.zip \
+   && unzip gcta_1.93.2beta.zip -d gcta \
+   && rm gcta_1.93.2beta.zip
+
+ENV PATH /gcta/gcta_1.93.2beta:$PATH
+
 USER root
 
 WORKDIR /data/

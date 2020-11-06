@@ -22,13 +22,23 @@ def helpMessage() {
     Usage:
 
     The typical command for running the pipeline is as follows:
-    nextflow run main.nf --simulate_vcf true --simulate_plink true
+    nextflow run main.nf --num_participants 10
 
     Essential parameters:
+    --num_participants              number of participants to simulate (default: 10)
 
-    --simulate_vcf:        whether you wish to simulate VCF files (default: false)
-    --simulate_plink:      whether you wish to simulate PLINK files (default: false)           
-
+    Optional parameters:
+    --effective_population_size     population size (for hapgen2) (default: 11418)
+    --mutation_rate                 mutation rate (for hapgen2) (default: -1)
+    --simulate_vcf                  simulate VCF files (default: false)
+    --simulate_plink                simulate PLINK files (default: false)           
+    --simulate_gwas_sum_stats       simulate GWAS summary statistics (default: false)
+    --gwas_cases                    the number of cases to simulate for the GWAS summary statistics (the total with controls should match --effective_population_size)
+    --gwas_controls                 the number of controls to simulate for the GWAS summary statistics (the total with cases should match --effective_population_size)
+    --gwas_quantitive               simulate GWAS summary statistics for a quantitative trait (default: false)
+    --gwas_heritability             heritibility for simulating GWAS summary statistics (default: 0.1)
+    --gwas_disease_prevalance       disease prevalence for simulating GWAS summary statistics (default: 0.1)
+    --gwas_simulation_replicates    number of simulation replicates for simulating GWAS summary statistics (default: 1)
     """.stripIndent()
 }
 
@@ -58,13 +68,47 @@ summary['Working dir']      = workflow.workDir
 summary['Script dir']       = workflow.projectDir
 summary['User']             = workflow.userName
 
-summary['reference_1000G_dir']  = params.reference_1000G_dir
-summary['legend_for_hapgen2']   = params.legend_for_hapgen2
-summary['simulate_vcf']         = params.simulate_vcf
-summary['simulate_plink']       = params.simulate_plink
+summary['reference_1000G_dir']        = params.reference_1000G_dir
+summary['legend_for_hapgen2']         = params.legend_for_hapgen2
+summary['num_participants']           = params.num_participants
+summary['effective_population_size']  = params.effective_population_size
+summary['mutation_rate']              = params.mutation_rate
+summary['simulate_vcf']               = params.simulate_vcf
+summary['simulate_plink']             = params.simulate_plink
+summary['simulate_gwas_sum_stats']    = params.simulate_gwas_sum_stats
+summary['gwas_cases']                 = params.gwas_cases
+summary['gwas_controls']              = params.gwas_controls
+summary['gwas_quantitive']            = params.gwas_quantitive
+summary['gwas_disease_prevalance']    = params.gwas_disease_prevalance
+summary['gwas_simulation_replicates'] = params.gwas_simulation_replicates
 
 log.info summary.collect { k,v -> "${k.padRight(18)}: $v" }.join("\n")
 log.info "-\033[2m--------------------------------------------------\033[0m-"
+
+
+
+/*----------------------------------------------
+  Setting up parameters and extra optional flags
+------------------------------------------------*/
+
+if (!params.num_participants) {
+  exit 1, "You have not provided a number of participants to simulate. \
+  \nPlease provide a number using the --num_participants parameter."
+}
+
+// Initialise variable to store optional parameters
+extra_hapgen2_flags = ""
+extra_gcta_flags = ""
+
+// Optional hapgen2 options
+if ( params.effective_population_size ) { extra_hapgen2_flags += " -Ne ${params.effective_population_size}" }
+if ( params.mutation_rate ) { extra_hapgen2_flags += " -theta ${params.mutation_rate}" }
+
+// Optional gtca options
+if ( params.gwas_quantitive ) { extra_gcta_flags += " --simu-qt " }
+if ( params.gwas_heritability ) { extra_gcta_flags += " --simu-hsq ${params.gwas_heritability} " }
+if ( params.gwas_disease_prevalance ) { extra_gcta_flags += " --simu-k ${params.gwas_disease_prevalance} " }
+if ( params.gwas_simulation_replicates ) { extra_gcta_flags += " --simu-rep ${params.gwas_simulation_replicates} " }
 
 
 
@@ -72,11 +116,25 @@ log.info "-\033[2m--------------------------------------------------\033[0m-"
   Setting up legend hapgen2 files  
 ---------------------------------*/
 
-Channel
-  .fromPath("${params.legend_for_hapgen2}/*.{leg}")
+process download_leg_files {
+    label "high_memory"
+    publishDir "${params.outdir}/leg-data", mode: "copy"
+    
+    output:
+    file("*leg") into downloaded_leg_files_ch
+
+    script:
+    """
+    wget ${params.legend_for_hapgen2}
+    tar xvzf all_leg.gz -C .
+    """
+}
+
+downloaded_leg_files_ch
+  .flatMap { it -> it }
   .map { file -> 
-       def key = file.name.toString().tokenize('-').get(0)
-       return tuple(key, file)
+       def chr = file.name.toString().tokenize('-').get(0)
+       return tuple(chr, leg_file)
    }
   .set { legend_for_hapgen2_ch }
 
@@ -102,6 +160,7 @@ process download_1000G {
 }
 
 downloaded_1000G_genetic_map_ch
+    .flatMap { it -> it }
     .map { file -> 
        def key = file.name.toString().tokenize('_').get(2)
        return tuple(key, file)
@@ -109,6 +168,7 @@ downloaded_1000G_genetic_map_ch
     .set { genetic_map_ch }
 
 downloaded_1000G_hap_ch
+    .flatMap { it -> it }
     .map { file -> 
        def key = file.name.toString().tokenize('_').get(4)
        return tuple(key, file)
@@ -137,10 +197,10 @@ process simulate_gen_and_sample {
 
     shell:
     position = leg.baseName.split("-")[1]
-    unzipped_hap = hap.simpleName
+    unzipped_hap = hap.baseName
     '''
     # Gunzip the relevant hap file
-    gunzip !{hap}
+    gunzip -f !{hap}
  
     # Run hapgen2
     hapgen2  \
@@ -148,9 +208,9 @@ process simulate_gen_and_sample {
     -l !{leg} \
     -h !{unzipped_hap} \
     -o !{chr}-simulated_hapgen \
-    -n 10 0 \
+    -n !{params.num_participants} 0 \
     -dl !{position} 0 0 0 \
-    -no_haps_output
+    -no_haps_output !{extra_hapgen2_flags}
 
     # Rename output files (phenotypes are not relevant at this stage)
     mv !{chr}-simulated_hapgen.controls.gen !{chr}-simulated_hapgen.gen
@@ -159,7 +219,7 @@ process simulate_gen_and_sample {
     # Update/correct the output files:
     # (1) Replace fake chromosome names (hapgen2 outputs: "snp_0", "snp_1" instead of a unique chromosome name)
     # (2) Remove the dash from the sample names (but not the header) - required for downstream PLINK steps
-    awk '$1=!{chr}' !{chr}-simulated_hapgen.gen > !{chr}-simulated_hapgen-updated.gen
+    awk '$1="!{chr}"' !{chr}-simulated_hapgen.gen > !{chr}-simulated_hapgen-updated.gen
     sed '1d' !{chr}-simulated_hapgen.sample | sed 's/_//g' | awk 'BEGIN{print "ID_1 ID_2 missing pheno"}{print}' > !{chr}-simulated_hapgen-updated.sample
     '''
 }
@@ -181,12 +241,13 @@ if (params.simulate_vcf){
         file("*") into simulated_vcf_ch
 
         shell:
+        out_vcf_name=gen.baseName
         '''
         plink2 \
         --gen !{gen} ref-unknown \
         --sample !{sample} \
         --recode vcf \
-        --out !{gen} \
+        --out !{out_vcf_name} \
         '''
         }
 }
@@ -208,14 +269,48 @@ if (params.simulate_plink){
         file("*.{bed,bim,fam}") into simulated_plink_ch
 
         shell:
+        out_plink_name=gen.baseName
         '''
         plink2 \
         --gen !{gen} ref-unknown \
         --sample !{sample} \
         --make-bed \
-        --out !{gen} \
+        --out !{out_plink_name} \
         '''
     }
 }
 
+
+
+/*------------------------------------------------
+  Simulating GWAS summary statistics (using GCTA) 
+--------------------------------------------------*/
+
+if ( params.simulate_plink && params.simulate_gwas_sum_stats && params.gwas_cases && params.gwas_controls){
+  process simulate_gwas_sum_stats {
+    publishDir "${params.outdir}/simulated_gwas_sum_stats", mode: "copy"
+
+   input:
+   tuple file(bed), file(bim), file(fam) from simulated_plink_ch
+
+   output:
+   file("*") into simulated_gwas_sum_stats_ch
+
+  shell:
+  bfile_name=bed.baseName
+  chr=bfile_name.split("-")[0]
+  '''
+  # Create list of causal SNPs required by GCTA
+  cut -f2 !{bim} | head -n 10 > !{chr}-causal.snplist
+
+  # Run GCTA
+  gcta64 \
+  --bfile !{bfile_name} \
+  --simu-cc !{params.gwas_cases} !{params.gwas_controls} \
+  --simu-causal-loci !{chr}-causal.snplist \
+  --out !{chr}-gwas-statistics \
+  !{extra_gcta_flags}
+  '''
+  }
+}
 

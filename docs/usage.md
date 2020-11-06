@@ -18,16 +18,34 @@ Notably, hapgen2 produced `.gen` and `.sample` files (per chromosome). These are
 The typical command for running the pipeline is as follows:
 
 ```
-nextflow run main.nf \
---simulate_vcf true \
---simulate_plink true
-```
+nextflow run main.nf --num_participants 10
 ```
 
 ## 4 - Essential parameters
 
-- **--simulate_vcf**: whether you wish to simulate VCF files (default: false)
+- **--num_participants**: number of participants to simulate
 
-- **--simulate_plink**: whether you wish to simulate PLINK files (default: false)
+## 5 - Optional parameters
 
-## 4 - Other parameters
+- **--effective_population_size**: population size (for hapgen2) (default: 11418)
+  
+- **--mutation_rate**: mutation rate (for hapgen2) (default: -1)
+
+- **--simulate_vcf**: simulate VCF files (default: true)
+
+- **--simulate_plink**: simulate PLINK files (default: true)
+
+- **--simulate_gwas_sum_stats**: simulate GWAS summary statistics with GCTA (default: false)
+
+**--gwas_cases**: the number of cases to simulate for the GWAS summary statistics (the total with controls should match --effective_population_size)
+   
+**--gwas_controls**: the number of controls to simulate for the GWAS summary statistics (the total with cases should match --effective_population_size)
+
+**--gwas_quantitive**: simulate GWAS summary statistics for a quantitative trait (default: false)
+
+**--gwas_heritability**: heritibility for simulating GWAS summary statistics (default: 0.1)
+
+**--gwas_disease_prevelance**: disease prevalence for simulating GWAS summary statistics (default: 0.1)
+
+**--gwas_simulation_replicates**: number of simulation replicates for simulating GWAS summary statistics (default: 1)
+    
