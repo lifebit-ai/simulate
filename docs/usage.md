@@ -31,9 +31,9 @@ nextflow run main.nf --num_participants 10
   
 - **--mutation_rate**: mutation rate (for hapgen2) (default: -1)
 
-- **--simulate_vcf**: simulate VCF files (default: true)
+- **--simulate_vcf**: simulate VCF files (default: false)
 
-- **--simulate_plink**: simulate PLINK files (default: true)
+- **--simulate_plink**: simulate PLINK files (default: false)
 
 - **--simulate_gwas_sum_stats**: simulate GWAS summary statistics with GCTA (default: false)
 
