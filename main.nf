@@ -134,7 +134,7 @@ downloaded_leg_files_ch
   .flatMap { it -> it }
   .map { file -> 
        def chr = file.name.toString().tokenize('-').get(0)
-       return tuple(chr, leg_file)
+       return tuple(chr, file)
    }
   .set { legend_for_hapgen2_ch }
 
