@@ -29,7 +29,7 @@ def helpMessage() {
 
     Optional parameters:
     --effective_population_size     population size (for hapgen2) (default: 11418)
-    --mutation_rate                 mutation rate (for hapgen2) (default: -1)
+    --mutation_rate                 mutation rate (for hapgen2) (default: 1)
     --simulate_vcf                  simulate VCF files (default: false)
     --simulate_plink                simulate PLINK files (default: false)           
     --simulate_gwas_sum_stats       simulate GWAS summary statistics (default: false)
