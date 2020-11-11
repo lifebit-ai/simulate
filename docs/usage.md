@@ -41,7 +41,7 @@ nextflow run main.nf --num_participants 10
    
 **--gwas_controls**: the number of controls to simulate for the GWAS summary statistics (the total with cases should match --effective_population_size)
 
-**--gwas_quantitive**: simulate GWAS summary statistics for a quantitative trait (default: false)
+**--gwas_pheno_trait_type**: type of trait of interest (pheno_col) to use when simulating GWAS summary statistics with GTCA (available: `binary`, `quantitative` ; default: `binary`)
 
 **--gwas_heritability**: heritibility for simulating GWAS summary statistics (default: 0.1)
 
