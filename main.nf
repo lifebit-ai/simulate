@@ -68,7 +68,7 @@ summary['Working dir']      = workflow.workDir
 summary['Script dir']       = workflow.projectDir
 summary['User']             = workflow.userName
 
-summary['reference_1000G_dir']        = params.reference_1000G_dir
+summary['reference_1000G']            = params.reference_1000G
 summary['legend_for_hapgen2']         = params.legend_for_hapgen2
 summary['num_participants']           = params.num_participants
 summary['effective_population_size']  = params.effective_population_size
@@ -116,16 +116,22 @@ if ( params.gwas_simulation_replicates ) { extra_gcta_flags += " --simu-rep ${pa
   Setting up legend hapgen2 files  
 ---------------------------------*/
 
+Channel
+    .fromPath("${params.legend_for_hapgen2}")
+    .set { legend_for_hapgen2_file_ch }
+
 process download_leg_files {
     label "high_memory"
     publishDir "${params.outdir}/leg-data", mode: "copy"
     
+    input:
+    file("all_leg.gz") from legend_for_hapgen2_file_ch
+
     output:
     file("*leg") into downloaded_leg_files_ch
 
     script:
     """
-    wget ${params.legend_for_hapgen2}
     tar xvzf all_leg.gz -C .
     """
 }
@@ -144,17 +150,23 @@ downloaded_leg_files_ch
   Download 1000G data needed to run hapgen2  
 ---------------------------------------------*/
 
+Channel
+    .fromPath("${params.reference_1000G}")
+    .set { reference_1000G_ch }
+
 process download_1000G {
     label "high_memory"
     publishDir "${params.outdir}/1000G-data", mode: "copy"
     
+    input:
+    file("ALL_1000G_phase1integrated_v3_impute.tgz") from reference_1000G_ch
+
     output:
     file("*combined_b37.txt") into downloaded_1000G_genetic_map_ch
     file("*impute.hap.gz") into downloaded_1000G_hap_ch
 
     script:
     """
-    wget ${params.reference_1000G_dir}
     tar zxvf ALL_1000G_phase1integrated_v3_impute.tgz --strip-components 1
     """
 }
@@ -231,25 +243,25 @@ process simulate_gen_and_sample {
 -------------------------------------------------------*/
 
 if (params.simulate_vcf){
-    process simulate_vcf {
-        publishDir "${params.outdir}/simulated_vcf", mode: "copy"
+  process simulate_vcf {
+    publishDir "${params.outdir}/simulated_vcf", mode: "copy"
 
-        input:
-        tuple file(gen), file(sample) from simulated_gen_for_vcf_ch
+    input:
+    tuple file(gen), file(sample) from simulated_gen_for_vcf_ch
 
-        output:
-        file("*") into simulated_vcf_ch
+    output:
+    file("*") into simulated_vcf_ch
 
-        shell:
-        out_vcf_name=gen.baseName
-        '''
-        plink2 \
-        --gen !{gen} ref-unknown \
-        --sample !{sample} \
-        --recode vcf \
-        --out !{out_vcf_name} \
-        '''
-        }
+    shell:
+    out_vcf_name=gen.baseName
+    '''
+    plink2 \
+    --gen !{gen} ref-unknown \
+    --sample !{sample} \
+    --recode vcf \
+    --out !{out_vcf_name} \
+    '''
+    }
 }
 
 
