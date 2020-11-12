@@ -11,9 +11,13 @@ This pipeline requires 2 datasets, both of which are pre-generated (i.e. do not 
 - Legend files containing SNPs you wish to simulate
 
 When combined, `hapgen2` will use your legend files to simulate (or re-sample) 1000G data.
-Notably, hapgen2 produced `.gen` and `.sample` files (per chromosome). These are subsequently converted to multisample VCFs and/or PLINK files.
+Notably, hapgen2 produced `.gen` and `.sample` files (per chromosome). These are subsequently converted to multisample VCFs and/or PLINK files. See more about this in `output.md`.
 
-## 3 - Basic example
+## 3 - Regarding builds
+
+This pipeline is based on build 37. In other words, all simulated data is in build 37.
+
+## 4 - Basic example
 
 The typical command for running the pipeline is as follows:
 
@@ -21,7 +25,7 @@ The typical command for running the pipeline is as follows:
 nextflow run main.nf --num_participants 40
 ```
 
-## 4 - Essential parameters
+## 5 - Essential parameters
 
 - **--num_participants**: number of participants to simulate
 
@@ -49,3 +53,4 @@ nextflow run main.nf --num_participants 40
 
 **--gwas_simulation_replicates**: number of simulation replicates for simulating GWAS summary statistics (default: 1)
     
+
