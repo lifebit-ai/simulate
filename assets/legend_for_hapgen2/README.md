@@ -49,8 +49,9 @@ $ bash make-leg-files.sh -f only_biallelic_snps.vcf
 ## 3 - Create a single tar.gz file to upload to S3
 
 ```
-$ zip all_leg.gz *leg
+$ tar -zcf all_leg.tgz *.leg
 ```
 
+Then can change the comment to open up
 The file can now be uploaded to S3.
 
