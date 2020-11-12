@@ -293,13 +293,16 @@ if (!params.simulate_plink && params.simulate_gwas_sum_stats) {
 }
 
 // Check that the number of cases and controls to simulate match the total number of simulated participants.
-def cases_num = params.gwas_cases
-def controls_num = params.gwas_controls
-def total = cases_num + controls_num
+if (params.gwas_cases && params.gwas_controls) {
 
-if (params.num_participants != total) {
-  exit 1, "The number of cases and controls to simulate in the GWAS summary statistics must match the total number of simulated participants. \
-  \nPlease ensure that the sum of --gwas_cases and --gwas_controls match --num_participants."
+  def cases_num = params.gwas_cases
+  def controls_num = params.gwas_controls
+  def total = cases_num + controls_num
+  
+  if (params.num_participants != total) {
+    exit 1, "The number of cases and controls to simulate in the GWAS summary statistics must match the total number of simulated participants. \
+    \nPlease ensure that the sum of --gwas_cases and --gwas_controls match --num_participants."
+    }
 }
 
 if ( params.simulate_plink && params.simulate_gwas_sum_stats && params.gwas_cases && params.gwas_controls){
