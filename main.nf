@@ -125,14 +125,14 @@ process download_leg_files {
     publishDir "${params.outdir}/leg-data", mode: "copy"
     
     input:
-    file("all_leg.gz") from legend_for_hapgen2_file_ch
+    file("all_leg.tar.gz") from legend_for_hapgen2_file_ch
 
     output:
     file("*leg") into downloaded_leg_files_ch
 
     script:
     """
-    tar xvzf all_leg.gz -C .
+    tar xvzf all_leg.tar.gz -C .
     """
 }
 
@@ -167,7 +167,7 @@ process download_1000G {
 
     script:
     """
-    tar zxvf ALL_1000G_phase1integrated_v3_impute.tgz --strip-components 1
+    tar xvzf ALL_1000G_phase1integrated_v3_impute.tgz --strip-components 1
     """
 }
 
