@@ -11,7 +11,7 @@ This pipeline performs simulations of various genomics datasets. It is is built 
 ## 2 - Quick Start
 
 ```
-nextflow run main.nf --num_participants 10
+nextflow run main.nf --num_participants 40
 ```
 
 ## 3 - Documentation

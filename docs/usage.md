@@ -18,7 +18,7 @@ Notably, hapgen2 produced `.gen` and `.sample` files (per chromosome). These are
 The typical command for running the pipeline is as follows:
 
 ```
-nextflow run main.nf --num_participants 10
+nextflow run main.nf --num_participants 40
 ```
 
 ## 4 - Essential parameters
