@@ -16,6 +16,6 @@ nextflow run main.nf --num_participants 40
 
 ## 3 - Documentation
 
-The lifebit-ai/simulate pipeline comes with documentation about the pipeline which you can find in the [`docs/` directory](docs).
+The lifebit-ai/simulate pipeline comes with documentation about the pipeline which you can find in the [`docs/`](docs).
 
 
