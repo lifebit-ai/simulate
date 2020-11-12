@@ -36,7 +36,7 @@ done
 $ aws s3 cp . s3://testdata-magda/gel-gwas-test-vcf/ --include "*vcf.gz" --acl public-read --recursive
 ```
 
-# 2 - Make a .csv file to match the new files
+# 2 - Steps for a .csv file to match the new files
 
 This file was based off `s3://lifebit-featured-datasets/projects/gel/gel-gwas/testdata/vcfs.csv`
 Once done, send it to the S3 as show below.
