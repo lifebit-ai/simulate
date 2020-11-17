@@ -244,13 +244,14 @@ process simulate_gen_and_sample {
 
 if (params.simulate_vcf){
   process simulate_vcf {
-    publishDir "${params.outdir}/simulated_vcf", mode: "copy"
+    publishDir "${params.outdir}/simulated_vcf/not_compressed_and_indexed", mode: "copy"
 
     input:
     tuple file(gen), file(sample) from simulated_gen_for_vcf_ch
 
     output:
-    file("*") into simulated_vcf_ch
+    file("*") into not_compressed_and_indexed_simulated_vcf_results
+    file("*vcf") into not_compressed_and_indexed_simulated_vcf_ch
 
     shell:
     out_vcf_name=gen.baseName
@@ -262,6 +263,26 @@ if (params.simulate_vcf){
     --out !{out_vcf_name} \
     '''
     }
+
+/*     process compress_and_index_vcf {
+      publishDir "${params.outdir}/simulated_vcf/compressed_and_indexed", mode: "copy"
+
+      input:
+      file(vcf) from not_compressed_and_indexed_simulated_vcf_ch
+
+      output:
+      file("*") into compressed_and_indexed_simulated_vcf_ch
+
+      shell:
+      compressed_vcf_name=vcf.baseName
+      '''
+      # Compress the VCF file
+      bcftools view -I !{vcf} -Oz -o !{compressed_vcf_name}.gz
+
+      # Index the compressed VCFc file
+      bcftools index !{compressed_vcf_name}.gz
+      '''
+    } */
 }
 
 
@@ -321,27 +342,27 @@ if ( params.simulate_plink && params.simulate_gwas_sum_stats && params.gwas_case
   process simulate_gwas_sum_stats {
     publishDir "${params.outdir}/simulated_gwas_sum_stats", mode: "copy"
 
-   input:
-   tuple file(bed), file(bim), file(fam) from simulated_plink_ch
+    input:
+    tuple file(bed), file(bim), file(fam) from simulated_plink_ch
 
-   output:
-   file("*") into simulated_gwas_sum_stats_ch
+    output:
+    file("*") into simulated_gwas_sum_stats_ch
 
-  shell:
-  bfile_name=bed.baseName
-  chr=bfile_name.split("-")[0]
-  '''
-  # Create list of causal SNPs required by GCTA
-  cut -f2 !{bim} | head -n 10 > !{chr}-causal.snplist
+    shell:
+    bfile_name=bed.baseName
+    chr=bfile_name.split("-")[0]
+    '''
+    # Create list of causal SNPs required by GCTA
+    cut -f2 !{bim} | head -n 10 > !{chr}-causal.snplist
 
-  # Run GCTA
-  gcta64 \
-  --bfile !{bfile_name} \
-  --simu-cc !{params.gwas_cases} !{params.gwas_controls} \
-  --simu-causal-loci !{chr}-causal.snplist \
-  --out !{chr}-gwas-statistics \
-  !{extra_gcta_flags}
-  '''
+    # Run GCTA
+    gcta64 \
+    --bfile !{bfile_name} \
+    --simu-cc !{params.gwas_cases} !{params.gwas_controls} \
+    --simu-causal-loci !{chr}-causal.snplist \
+    --out !{chr}-gwas-statistics \
+    !{extra_gcta_flags}
+    '''
   }
 }
 
