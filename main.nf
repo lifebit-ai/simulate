@@ -264,7 +264,7 @@ if (params.simulate_vcf){
     '''
     }
 
-/*     process compress_and_index_vcf {
+    process compress_and_index_vcf {
       publishDir "${params.outdir}/simulated_vcf/compressed_and_indexed", mode: "copy"
 
       input:
@@ -282,7 +282,7 @@ if (params.simulate_vcf){
       # Index the compressed VCFc file
       bcftools index !{compressed_vcf_name}.gz
       '''
-    } */
+    }
 }
 
 
