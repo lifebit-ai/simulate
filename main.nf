@@ -22,7 +22,7 @@ def helpMessage() {
     Usage:
 
     The typical command for running the pipeline is as follows:
-    nextflow run main.nf --num_participants 10
+    nextflow run main.nf --num_participants 40
 
     Essential parameters:
     --num_participants              number of participants to simulate
