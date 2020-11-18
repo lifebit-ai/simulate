@@ -19,12 +19,14 @@ $ nextflow run main.nf --num_participants 40 --simulate_vcf true --simulate_plin
 This was done as follows:
 ```
 $ cd results/1000G-data
-$ tar cvzf ALL_1000G_phase1integrated_v3_impute_chr21.tgz *chr21*
+$ mkdir ALL_1000G_phase1integrated_v3_impute
+$ cp *chr21* ALL_1000G_phase1integrated_v3_impute/
+$ tar cvzf ALL_1000G_phase1integrated_v3_impute.tgz ALL_1000G_phase1integrated_v3_impute/
 ```
 
 Push to S3:
 ```
-aws s3 cp ALL_1000G_phase1integrated_v3_impute_chr21.tgz s3://testdata-magda/simulate-ci-testing/ --acl public-read
+aws s3 cp ALL_1000G_phase1integrated_v3_impute.tgz s3://testdata-magda/simulate-ci-testing/ --acl public-read
 ```
 
 NB: this file was not commited to the repository. It therefore just present on S3.
