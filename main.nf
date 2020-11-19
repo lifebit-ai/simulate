@@ -274,13 +274,12 @@ if (params.simulate_vcf){
       file("*") into compressed_and_indexed_simulated_vcf_ch
 
       shell:
-      compressed_vcf_name=vcf.baseName
       '''
       # Compress the VCF file
-      bcftools view -I !{vcf} -Oz -o !{compressed_vcf_name}.gz
+      bcftools view -I !{vcf} -Oz -o !{vcf}.gz
 
       # Index the compressed VCFc file
-      bcftools index !{compressed_vcf_name}.gz
+      bcftools index !{vcf}.gz
       '''
     }
 }
