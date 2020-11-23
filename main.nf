@@ -390,19 +390,19 @@ if (params.simulate_cb_output && params.simulate_cb_output_config) {
     .set { cohort_browser_yaml_config_ch }
 
   process simulate_cb_output{
-    publishDir "${params.outdir}/simulate_cohort_browser_data", mode: 'copy'
+    publishDir "${params.outdir}/simulated_cohort_browser_data", mode: 'copy'
 
     input:
     file(config) from cohort_browser_yaml_config_ch
 
     output:
-    file("${params.output_tag}_pheno_data.csv") into simulated_cb_pheno_data_ch
-    file("${params.output_tag}_pheno_metadata.csv") into simulated_cb_pheno_metadata_ch
+    file("${params.simulate_cb_output_output_tag}_pheno_data.csv") into simulated_cb_pheno_data_ch
+    file("${params.simulate_cb_output_output_tag}_pheno_metadata.csv") into simulated_cb_pheno_metadata_ch
 
     script:
     """
     simulate_phenodata.R --config_file "${config}" \
-                         --outprefix "${params.output_tag}"
+                         --outprefix "${params.simulate_cb_output_output_tag}"
     """
   }
 
