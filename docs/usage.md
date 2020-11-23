@@ -41,16 +41,22 @@ nextflow run main.nf --num_participants 40
 
 - **--simulate_gwas_sum_stats**: simulate GWAS summary statistics with GCTA (default: false)
 
-**--gwas_cases**: the number of cases to simulate for the GWAS summary statistics (the total with controls should match --effective_population_size)
+- **--gwas_cases**: the number of cases to simulate for the GWAS summary statistics (the total with controls should match --effective_population_size)
    
-**--gwas_controls**: the number of controls to simulate for the GWAS summary statistics (the total with cases should match --effective_population_size)
+- **--gwas_controls**: the number of controls to simulate for the GWAS summary statistics (the total with cases should match --effective_population_size)
 
-**--gwas_pheno_trait_type**: type of trait of interest (pheno_col) to use when simulating GWAS summary statistics with GTCA (available: `binary`, `quantitative` ; default: `binary`)
+- **--gwas_pheno_trait_type**: type of trait of interest (pheno_col) to use when simulating GWAS summary statistics with GTCA (available: `binary`, `quantitative` ; default: `binary`)
 
-**--gwas_heritability**: heritibility for simulating GWAS summary statistics (default: 0.1)
+- **--gwas_heritability**: heritibility for simulating GWAS summary statistics (default: 0.1)
 
-**--gwas_disease_prevelance**: disease prevalence for simulating GWAS summary statistics (default: 0.1)
+- **--gwas_disease_prevelance**: disease prevalence for simulating GWAS summary statistics (default: 0.1)
 
-**--gwas_simulation_replicates**: number of simulation replicates for simulating GWAS summary statistics (default: 1)
-    
+- **--gwas_simulation_replicates**: number of simulation replicates for simulating GWAS summary statistics (default: 1)
+
+- **--simulate_cb_output**: whether or not you wish to simulate the cohort browser (CB) output data - this can subsequently be used by lifebit-ai/gel-gwas (default: false)
+
+- **--simulate_cb_output_config**: the YAML config file used to simulate cohort browser data with (must be provided if --simulate_cb_output is set to true )
+
+- **simulate_cb_output_output_tag**: the outprefix you wish to give to the simulated cohort browser data (default: `simulated`)
+
 

@@ -26,19 +26,22 @@ def helpMessage() {
 
     Essential parameters:
     --num_participants              number of participants to simulate
-
+    
     Optional parameters:
-    --effective_population_size     population size (for hapgen2) (default: 11418)
-    --mutation_rate                 mutation rate (for hapgen2) (default: 1)
-    --simulate_vcf                  simulate VCF files (default: false)
-    --simulate_plink                simulate PLINK files (default: false)           
-    --simulate_gwas_sum_stats       simulate GWAS summary statistics (default: false)
-    --gwas_cases                    the number of cases to simulate for the GWAS summary statistics (the total with controls should match --effective_population_size)
-    --gwas_controls                 the number of controls to simulate for the GWAS summary statistics (the total with cases should match --effective_population_size)
-    --gwas_pheno_trait_type         type of trait of interest (pheno_col) to use when simulating GWAS summary statistics with GTCA (available: `binary`, `quantitative` ; default: `binary`)
-    --gwas_heritability             heritibility for simulating GWAS summary statistics (default: 0.1)
-    --gwas_disease_prevalance       disease prevalence for simulating GWAS summary statistics (default: 0.1)
-    --gwas_simulation_replicates    number of simulation replicates for simulating GWAS summary statistics (default: 1)
+    --effective_population_size      population size (for hapgen2) (default: 11418)
+    --mutation_rate                  mutation rate (for hapgen2) (default: 1)
+    --simulate_vcf                   simulate VCF files (default: false)
+    --simulate_plink                 simulate PLINK files (default: false)           
+    --simulate_gwas_sum_stats        simulate GWAS summary statistics (default: false)
+    --gwas_cases                     the number of cases to simulate for the GWAS summary statistics (the total with controls should match --effective_population_size)
+    --gwas_controls                  the number of controls to simulate for the GWAS summary statistics (the total with cases should match --effective_population_size)
+    --gwas_pheno_trait_type          type of trait of interest (pheno_col) to use when simulating GWAS summary statistics with GTCA (available: `binary`, `quantitative` ; default: `binary`)
+    --gwas_heritability              heritibility for simulating GWAS summary statistics (default: 0.1)
+    --gwas_disease_prevalance        disease prevalence for simulating GWAS summary statistics (default: 0.1)
+    --gwas_simulation_replicates     number of simulation replicates for simulating GWAS summary statistics (default: 1)
+    --simulate_cb_output             whether or not you wish to simulate the cohort browser (CB) output data - this can subsequently be used by lifebit-ai/gel-gwas (default: false)
+    --simulate_cb_output_config      the YAML config file used to simulate cohort browser data with (must be provided if --simulate_cb_output is set to true )
+    --simulate_cb_output_output_tag  the outprefix you wish to give to the simulated cohort browser data (default: `simulated`)
     """.stripIndent()
 }
 
@@ -61,26 +64,29 @@ def summary = [:]
 
 if (workflow.revision) summary['Pipeline Release'] = workflow.revision
 
-summary['Max Resources']    = "$params.max_memory memory, $params.max_cpus cpus, $params.max_time time per job"
-summary['Output dir']       = params.outdir
-summary['Launch dir']       = workflow.launchDir
-summary['Working dir']      = workflow.workDir
-summary['Script dir']       = workflow.projectDir
-summary['User']             = workflow.userName
+summary['Max Resources']                  = "$params.max_memory memory, $params.max_cpus cpus, $params.max_time time per job"
+summary['Output dir']                     = params.outdir
+summary['Launch dir']                     = workflow.launchDir
+summary['Working dir']                    = workflow.workDir
+summary['Script dir']                     = workflow.projectDir
+summary['User']                           = workflow.userName
 
-summary['reference_1000G']            = params.reference_1000G
-summary['legend_for_hapgen2']         = params.legend_for_hapgen2
-summary['num_participants']           = params.num_participants
-summary['effective_population_size']  = params.effective_population_size
-summary['mutation_rate']              = params.mutation_rate
-summary['simulate_vcf']               = params.simulate_vcf
-summary['simulate_plink']             = params.simulate_plink
-summary['simulate_gwas_sum_stats']    = params.simulate_gwas_sum_stats
-summary['gwas_cases']                 = params.gwas_cases
-summary['gwas_controls']              = params.gwas_controls
-summary['gwas_pheno_trait_type']      = params.gwas_pheno_trait_type
-summary['gwas_disease_prevalance']    = params.gwas_disease_prevalance
-summary['gwas_simulation_replicates'] = params.gwas_simulation_replicates
+summary['reference_1000G']                = params.reference_1000G
+summary['legend_for_hapgen2']             = params.legend_for_hapgen2
+summary['num_participants']               = params.num_participants
+summary['effective_population_size']      = params.effective_population_size
+summary['mutation_rate']                  = params.mutation_rate
+summary['simulate_vcf']                   = params.simulate_vcf
+summary['simulate_plink']                 = params.simulate_plink
+summary['simulate_gwas_sum_stats']        = params.simulate_gwas_sum_stats
+summary['gwas_cases']                     = params.gwas_cases
+summary['gwas_controls']                  = params.gwas_controls
+summary['gwas_pheno_trait_type']          = params.gwas_pheno_trait_type
+summary['gwas_disease_prevalance']        = params.gwas_disease_prevalance
+summary['gwas_simulation_replicates']     = params.gwas_simulation_replicates
+summary['simulate_cb_output']             = params.simulate_cb_output
+summary['simulate_cb_output_config']      = params.simulate_cb_output_config   
+summary['simulate_cb_output_output_tag']  = params.simulate_cb_output_output_tag 
 
 log.info summary.collect { k,v -> "${k.padRight(18)}: $v" }.join("\n")
 log.info "-\033[2m--------------------------------------------------\033[0m-"
@@ -113,7 +119,7 @@ if ( params.gwas_simulation_replicates ) { extra_gcta_flags += " --simu-rep ${pa
 
 
 /*-------------------------------
-  Setting up legend hapgen2 files  
+  Download legend hapgen2 files  
 ---------------------------------*/
 
 Channel
@@ -366,3 +372,38 @@ if ( params.simulate_plink && params.simulate_gwas_sum_stats && params.gwas_case
 }
 
 
+
+/*---------------------------
+  Simulating CB output data   
+-----------------------------*/
+
+// Check that a YAML file was provided to perform the simulation
+if (params.simulate_cb_output && !params.simulate_cb_output_config) {
+  exit 1, "In order to simulate cohort browser (CB) output data, you must first simulate supply a YAML configuration file. \
+  \nPlease use both --simulate_cb_output and --simulate_cb_output_config."
+}
+
+if (params.simulate_cb_output && params.simulate_cb_output_config) {
+  
+  Channel
+    .fromPath("${params.simulate_cb_output_config}")
+    .set { cohort_browser_yaml_config_ch }
+
+  process simulate_cb_output{
+    publishDir "${params.outdir}/simulate_cohort_browser_data", mode: 'copy'
+
+    input:
+    file(config) from cohort_browser_yaml_config_ch
+
+    output:
+    file("${params.output_tag}_pheno_data.csv") into simulated_cb_pheno_data_ch
+    file("${params.output_tag}_pheno_metadata.csv") into simulated_cb_pheno_metadata_ch
+
+    script:
+    """
+    simulate_phenodata.R --config_file "${config}" \
+                         --outprefix "${params.output_tag}"
+    """
+  }
+
+}
