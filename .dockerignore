@@ -11,4 +11,3 @@ nextflow.config
 .github/
 conf/
 docs/
-testdata/

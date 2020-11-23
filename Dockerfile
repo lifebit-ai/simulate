@@ -33,6 +33,17 @@ RUN wget https://cnsgenomics.com/software/gcta/bin/gcta_1.93.2beta.zip \
 
 ENV PATH /gcta/gcta_1.93.2beta:$PATH
 
+RUN mkdir /opt/bin
+COPY bin/* /opt/bin/
+
+RUN find /opt/bin/ -type f -iname "*.py" -exec chmod +x {} \; && \
+    find /opt/bin/ -type f -iname "*.R" -exec chmod +x {} \; && \
+    find /opt/bin/ -type f -iname "*.sh" -exec chmod +x {} \; && \
+    find /opt/bin/ -type f -iname "*.css" -exec chmod +x {} \; && \
+    find /opt/bin/ -type f -iname "*.Rmd" -exec chmod +x {} \;
+
+ENV PATH="$PATH:/opt/bin/"
+
 USER root
 
 WORKDIR /data/
