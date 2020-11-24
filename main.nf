@@ -238,7 +238,7 @@ process simulate_gen_and_sample {
     # (1) Replace fake chromosome names (hapgen2 outputs: "snp_0", "snp_1" instead of a unique chromosome name)
     # (2) Remove the dash from the sample names (but not the header) - required for downstream PLINK steps
     awk '$1="!{chr}"' !{chr}-simulated_hapgen.gen > !{chr}-simulated_hapgen-updated.gen
-    sed '1d' !{chr}-simulated_hapgen.sample | sed 's/_//g' | awk 'BEGIN{print "ID_1 ID_2 missing pheno"}{print}' > !{chr}-simulated_hapgen-updated.sample
+    sed '1d' !{chr}-simulated_hapgen.sample | sed 's/id1_/id/g' | sed 's/id2_/id/g' | awk 'BEGIN{print "ID_1 ID_2 missing pheno"}{print}' > !{chr}-simulated_hapgen-updated.sample
     '''
 }
 
@@ -401,7 +401,7 @@ if (params.simulate_cb_output && params.simulate_cb_output_config) {
 
     script:
     """
-    simulate_phenodata.R --config_file "${config}" \
+    simulate_cb_output.R --config_file "${config}" \
                          --outprefix "${params.simulate_cb_output_output_tag}"
     """
   }

@@ -158,7 +158,7 @@ simulate_pheno = function(config, col_names){
 if (pheno_data == 'None'){
     #Run everything and add fake platekey IDs
     sym_data = sapply(names(config[['col_params']]), function(x) simulate_pheno(config, x), simplify=FALSE) %>% bind_cols()
-    sym_data['Platekey_in_aggregate_VCF-0.0'] = 1:(config[['n_samples']])
+    sym_data['Platekey_in_aggregate_VCF-0.0'] = paste0('id',0:config[['n_samples']],'_', 'id',0:config[['n_samples']])
     sym_data['i'] = 1:(config[['n_samples']])
     write.csv(sym_data, paste0(outprefix, '_pheno_data.csv'), quote=FALSE, row.names=FALSE)
 
