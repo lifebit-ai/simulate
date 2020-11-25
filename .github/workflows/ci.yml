@@ -8,6 +8,7 @@ jobs:
     strategy:
       matrix:
         nxf_ver: ['20.01.0', '']
+        gwas_pheno_trait_type: ['binary', 'quantitative']
     steps:
       - uses: actions/checkout@v1
       - name: Install Nextflow
@@ -15,8 +16,22 @@ jobs:
           export NXF_VER=${{ matrix.nxf_ver }}
           wget -qO- get.nextflow.io | bash
           sudo mv nextflow /usr/local/bin/
-      - name: test_basic_sim_vcf_plink_gwas_stats
+      - name: test
         run: |
-          nextflow run ${GITHUB_WORKSPACE} -profile test_basic_sim_vcf_plink_gwas_stats
+          nextflow run ${GITHUB_WORKSPACE} --gwas_pheno_trait_type ${{ matrix.gwas_pheno_trait_type }}  -profile test
+  simple_test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        gwas_pheno_trait_type: ['binary', 'quantitative']
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install Nextflow
+        run: |
+          wget -qO- get.nextflow.io | bash
+          sudo mv nextflow /usr/local/bin/
+      - name: Run script
+        run: |
+          nextflow run ${GITHUB_WORKSPACE} -profile test
 
           
