@@ -3,12 +3,11 @@ name: tests for lifebit-ai/simulate
 on: [push, pull_request]
 
 jobs:
-  test:
+  basic_test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         nxf_ver: ['20.01.0', '']
-        gwas_pheno_trait_type: ['binary', 'quantitative']
     steps:
       - uses: actions/checkout@v1
       - name: Install Nextflow
@@ -16,22 +15,23 @@ jobs:
           export NXF_VER=${{ matrix.nxf_ver }}
           wget -qO- get.nextflow.io | bash
           sudo mv nextflow /usr/local/bin/
-      - name: test
+      - name: Run pipeline with basic test profile - simulate plink, vcf and gwas summary statistics
         run: |
-          nextflow run ${GITHUB_WORKSPACE} --gwas_pheno_trait_type ${{ matrix.gwas_pheno_trait_type }}  -profile test
-  simple_test:
+          nextflow run ${GITHUB_WORKSPACE} -profile test
+  various_flags_test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         gwas_pheno_trait_type: ['binary', 'quantitative']
+        effective_population_size: ['11418','11000']
     steps:
       - uses: actions/checkout@v1
       - name: Install Nextflow
         run: |
           wget -qO- get.nextflow.io | bash
           sudo mv nextflow /usr/local/bin/
-      - name: Run script
+      - name: Run pipeline with basic test profile and various optional flags 
         run: |
-          nextflow run ${GITHUB_WORKSPACE} -profile test
+          nextflow run ${GITHUB_WORKSPACE} --gwas_pheno_trait_type ${{ matrix.gwas_pheno_trait_type }} --effective_population_size ${{ matrix.effective_population_size }} -profile test
 
           
