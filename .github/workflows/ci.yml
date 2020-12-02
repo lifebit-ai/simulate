@@ -25,8 +25,6 @@ jobs:
         effective_population_size: ['11418','11000']
         mutation_rate: ['1','2']
         gwas_pheno_trait_type: ['binary', 'quantitative']
-        gwas_heritability: ['0.1','0.2']
-        gwas_disease_prevalance: ['0.1','0.2']
         gwas_simulation_replicates: ['1', '2']
     steps:
       - uses: actions/checkout@v1
@@ -36,6 +34,6 @@ jobs:
           sudo mv nextflow /usr/local/bin/
       - name: Run pipeline with basic test profile and various optional flags 
         run: |
-          nextflow run ${GITHUB_WORKSPACE} --effective_population_size ${{ matrix.effective_population_size }} --mutation_rate ${{ matrix.mutation_rate }} --gwas_pheno_trait_type ${{ matrix.gwas_pheno_trait_type }} --gwas_heritability ${{ matrix.gwas_heritability }} --gwas_disease_prevalance ${{ matrix.gwas_disease_prevalance }} --gwas_simulation_replicates ${{ matrix.gwas_simulation_replicates }}  -profile test
+          nextflow run ${GITHUB_WORKSPACE} --effective_population_size ${{ matrix.effective_population_size }} --mutation_rate ${{ matrix.mutation_rate }} --gwas_pheno_trait_type ${{ matrix.gwas_pheno_trait_type }} --gwas_simulation_replicates ${{ matrix.gwas_simulation_replicates }}  -profile test
 
           
