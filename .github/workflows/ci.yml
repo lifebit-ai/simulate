@@ -23,7 +23,6 @@ jobs:
     strategy:
       matrix:
         effective_population_size: ['11418','11000']
-        mutation_rate: ['1','2']
         gwas_pheno_trait_type: ['binary', 'quantitative']
         gwas_simulation_replicates: ['1', '2']
     steps:
@@ -34,6 +33,6 @@ jobs:
           sudo mv nextflow /usr/local/bin/
       - name: Run pipeline with basic test profile and various optional flags 
         run: |
-          nextflow run ${GITHUB_WORKSPACE} --effective_population_size ${{ matrix.effective_population_size }} --mutation_rate ${{ matrix.mutation_rate }} --gwas_pheno_trait_type ${{ matrix.gwas_pheno_trait_type }} --gwas_simulation_replicates ${{ matrix.gwas_simulation_replicates }}  -profile test
+          nextflow run ${GITHUB_WORKSPACE} --effective_population_size ${{ matrix.effective_population_size }} --gwas_pheno_trait_type ${{ matrix.gwas_pheno_trait_type }} --gwas_simulation_replicates ${{ matrix.gwas_simulation_replicates }}  -profile test
 
           
