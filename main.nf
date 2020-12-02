@@ -377,17 +377,74 @@ if ( params.simulate_plink && params.simulate_gwas_sum_stats && params.gwas_case
   Simulating CB output data   
 -----------------------------*/
 
-// Check that a YAML file was provided to perform the simulation
-if (params.simulate_cb_output && !params.simulate_cb_output_config) {
-  exit 1, "In order to simulate cohort browser (CB) output data, you must first simulate supply a YAML configuration file. \
-  \nPlease use both --simulate_cb_output and --simulate_cb_output_config."
+// Check that the right combination of files was provided to perform the simulation
+if (params.simulate_cb_output && !params.simulate_cb_output_config && !params.simulate_cb_query_file && !params.simulate_cb_pheno_metadata) {
+  exit 1, "In order to simulate cohort browser (CB) output data, you must first simulate supply a YAML configuration file or corresponding query and metadata files. \
+  \nPlease use both --simulate_cb_output and --simulate_cb_output_config or \
+  \nPlease use all --simulate_cb_output, --simulate_cb_query_file and --simulate_cb_pheno_metadata ."
+}
+
+if (params.simulate_cb_output && !params.simulate_cb_output_config && params.simulate_cb_query_file && !params.simulate_cb_pheno_metadata) {
+  exit 1, "In order to simulate cohort browser (CB) output data, you must first simulate supply a YAML configuration file or corresponding query and metadata files. \
+  \nPlease use both --simulate_cb_output and --simulate_cb_output_config or \
+  \nPlease use all --simulate_cb_output, --simulate_cb_query_file and --simulate_cb_pheno_metadata ."
+}
+
+if (params.simulate_cb_output && !params.simulate_cb_output_config && !params.simulate_cb_query_file && params.simulate_cb_pheno_metadata) {
+  exit 1, "In order to simulate cohort browser (CB) output data, you must first simulate supply a YAML configuration file or corresponding query and metadata files. \
+  \nPlease use both --simulate_cb_output and --simulate_cb_output_config or \
+  \nPlease use all --simulate_cb_output, --simulate_cb_query_file and --simulate_cb_pheno_metadata ."
+}
+
+if (params.simulate_cb_output && params.simulate_cb_output_config && params.simulate_cb_query_file && params.simulate_cb_pheno_metadata) {
+  exit 1, "In order to simulate cohort browser (CB) output data, you must first simulate supply a YAML configuration file or corresponding query and metadata files. \
+  \nPlease use both --simulate_cb_output and --simulate_cb_output_config or \
+  \nPlease use all --simulate_cb_output, --simulate_cb_query_file and --simulate_cb_pheno_metadata ."
+}
+
+// Start processes
+
+if (params.simulate_cb_output && params.simulate_cb_query_file && params.simulate_cb_pheno_metadata){
+  Channel
+    .fromPath("${params.simulate_cb_query_file}")
+    .set { cohort_browser_query_file_ch }
+  Channel
+    .fromPath("${params.simulate_cb_pheno_metadata}")
+    .set { cohort_browser_pheno_metadata_file_ch }
+
+  process simulate_pheno_config_file{
+    publishDir "${params.outdir}/simulated_cohort_browser_data", mode: 'copy'
+
+    input: 
+    file(metadata) from cohort_browser_pheno_metadata_file_ch
+    file(query) from cohort_browser_query_file_ch
+
+    output:
+    file("${params.simulate_cb_output_output_tag}.yaml") into cohort_browser_yaml_config_ch
+
+    script:
+    """
+    generate_sim_config.R --pheno_metadata "$metadata" \
+                          --query "$query" \
+                          --n_samples "${params.num_participants}" \
+                          --pheno_col_name "${params.simulate_cb_pheno_col_name}" \
+                          --pheno_col_type "${params.simulate_cb_pheno_col_type}" \
+                          --pheno_col_fraction_of_cases ${params.simulate_cb_pheno_col_fraction_of_cases} \
+                          --pheno_col_case_group ${params.simulate_cb_pheno_col_case_group} \
+                          --outprefix "${params.simulate_cb_output_output_tag}"
+    """
+  }
+
 }
 
 if (params.simulate_cb_output && params.simulate_cb_output_config) {
-  
   Channel
-    .fromPath("${params.simulate_cb_output_config}")
-    .set { cohort_browser_yaml_config_ch }
+      .fromPath("${params.simulate_cb_output_config}")
+      .set { cohort_browser_yaml_config_ch }
+}
+
+if (params.simulate_cb_output && ((params.simulate_cb_output_config) || (params.simulate_query_file && params.simulate_pheno_metadata))) {
+  
 
   process simulate_cb_output{
     publishDir "${params.outdir}/simulated_cohort_browser_data", mode: 'copy'

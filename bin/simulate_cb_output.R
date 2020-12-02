@@ -61,30 +61,38 @@ simulate_pheno = function(config, col_names){
                             combinations$Var3)
     # Categorical
     if (config[['col_params']][[col_names]][['type']] == 'Categorical'){
-        if(col_names == config[['col_params']][['pheno_col']][['name']]){
+        if (col_names == config[['col_params']][['pheno_col']][['name']]){
             rest_prob = (1 - config[['col_params']][['pheno_col']][['fraction_of_cases']])/length(config[['col_params']][[col_names]][['values']])
             prob_vector = rep(rest_prob, length(config[['col_params']][[col_names]][['values']]))
+            #Makes a mask vector to substitute the value of interest by the fraction_of_cases
             idx = config[['col_params']][[col_names]][['values']] == config[['col_params']][['pheno_col']][['case_group']]
-            prob_vector[]
-            sym_col = sample(config[['col_params']][[col_names]][['values']], 
+            #Set the probability of value case to the desired one
+            prob_vector[idx] = config[['col_params']][['pheno_col']][['fraction_of_cases']]
+            #Samples with the probability distribution desired
+            sym_cols = sample(config[['col_params']][[col_names]][['values']], 
                                  config[['n_samples']],
                                  replace=T,
-                                 prob=
+                                 prob=prob_vector)
+            sym_cols = list(combinations[1] = sym_cols) %>% as_tibble()
+            return(sym_cols)
         }
-        if(col_names != config[['col_params']][['pheno_col']][['name']]){
+        if (col_names != config[['col_params']][['pheno_col']][['name']]){
 
-        
-        # Sample categorical data from the values in the config
-        sym_cols = sapply(combinations,
-                          function(x) sample(config[['col_params']][[col_names]][['values']], 
-                                 config[['n_samples']],
-                                 replace=T,
-                                 prob=config[['col_params']][[col_names]][['prob']]))
-        # Get all NA for n random columns
-        col_to_na = sample(colnames(sym_cols), config[['col_params']][[col_names]][['n_missing_col']])
-        sym_cols[sym_cols == 'NA'] = ""
-        sym_cols[, col_to_na] = ""
-        return(sym_cols %>% as.tibble())
+            prob_vector = case_when(config[['col_params']][[col_names]][['prob']] != NULL ~ config[['col_params']][[col_names]][['prob']],
+                                    TRUE ~ rep(1/length(config[['col_params']][[col_names]][['values']]), 
+                                                length(config[['col_params']][[col_names]][['values']])))
+                                                
+            # Sample categorical data from the values in the config
+            sym_cols = sapply(combinations,
+                                function(x) sample(config[['col_params']][[col_names]][['values']], 
+                                        config[['n_samples']],
+                                        replace=T,
+                                        prob=prob_vector))
+            # Get all NA for n random columns
+            col_to_na = sample(colnames(sym_cols), config[['col_params']][[col_names]][['n_missing_col']])
+            sym_cols[sym_cols == 'NA'] = ""
+            sym_cols[, col_to_na] = ""
+            return(sym_cols %>% as.tibble())
         }
     }
     if (config[['col_params']][[col_names]][['type']] == 'Integer'){

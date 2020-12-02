@@ -55,8 +55,8 @@ params:
   seed: 777.0
   col_params:
     pheno_col:
-      name: Hi
-      type: '5'
+      name: 'Participant phenotypic sex'
+      type: 'Categorical'
       fraction_of_cases: 0.5
     Participant phenotypic sex:
       type: Categorical
