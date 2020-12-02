@@ -2,6 +2,10 @@ params:
     n_samples: 100
     seed: 777
     col_params:
+        pheno_col:
+            name: 'cat_col'
+            type: 'Categorical'
+            fraction_of_cases: 0.5
         cat_col:
             n_instances: 1
             n_arrays: 4

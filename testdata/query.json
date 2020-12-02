@@ -1,0 +1,114 @@
+{
+    "columns":[ {
+        "id":40,
+                "instance":0,
+                "array":{
+                    "type":"exact",
+                    "value":0
+
+                }
+    }],
+    "type":"csv",
+    "filename":"cancer_phenotype_data",
+    "parentId":"1298319283",
+    "kind":"dataset",
+    "search":[
+        {
+            "column":{
+                "id":10,
+                "instance":0,
+                "array":{
+                    "type":"any",
+                    "value":0
+
+                }
+
+            },
+            "values":[
+                "F",
+                "M"
+            ]
+        },
+        {
+            "column":{
+                "id":66,
+                "instance":0,
+                "array":{
+                    "type":"any",
+                    "value":0
+
+                }
+
+            },
+            "values":[
+                "NOSE",
+                "NOSE AND THROAT",
+                "NPA",
+                "SAL",
+                "SERUM",
+                "SWAB-NOS",
+                "UPPER RESPIRATORY TRACT",
+                "THROAT"
+            ]
+        },
+        {
+            "column":{
+                "id":72,
+                "instance":0,
+                "array":{
+                    "type":"exact",
+                    "value":0
+
+                }
+
+            },
+            "values":[
+                "Positive",
+                "Negative"
+            ]
+        },
+        {
+            "column":{
+                "id":422,
+                "instance":0,
+                "array":{
+                    "type":"exact",
+                    "value":0
+
+                }
+
+            },
+            "low":"161",
+            "high":"181"
+        },
+        {
+            "column":{
+                "id":64,
+                "instance":0,
+                "array":{
+                    "type":"exact",
+                    "value":0
+
+                }
+
+            },
+            "low":"1995",
+            "high":"2000"
+        },
+        {
+            "column":{
+                "id":73,
+                "instance":0,
+                "array":{
+                    "type":"exact",
+                    "value":0
+
+                }
+
+            },
+            "low":"1995-01-01",
+            "high":"2020-03-28"
+        }
+    ]
+
+}
