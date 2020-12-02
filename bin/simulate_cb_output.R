@@ -61,6 +61,19 @@ simulate_pheno = function(config, col_names){
                             combinations$Var3)
     # Categorical
     if (config[['col_params']][[col_names]][['type']] == 'Categorical'){
+        if(col_names == config[['col_params']][['pheno_col']][['name']]){
+            rest_prob = (1 - config[['col_params']][['pheno_col']][['fraction_of_cases']])/length(config[['col_params']][[col_names]][['values']])
+            prob_vector = rep(rest_prob, length(config[['col_params']][[col_names]][['values']]))
+            idx = config[['col_params']][[col_names]][['values']] == config[['col_params']][['pheno_col']][['case_group']]
+            prob_vector[]
+            sym_col = sample(config[['col_params']][[col_names]][['values']], 
+                                 config[['n_samples']],
+                                 replace=T,
+                                 prob=
+        }
+        if(col_names != config[['col_params']][['pheno_col']][['name']]){
+
+        
         # Sample categorical data from the values in the config
         sym_cols = sapply(combinations,
                           function(x) sample(config[['col_params']][[col_names]][['values']], 
@@ -72,7 +85,7 @@ simulate_pheno = function(config, col_names){
         sym_cols[sym_cols == 'NA'] = ""
         sym_cols[, col_to_na] = ""
         return(sym_cols %>% as.tibble())
-        
+        }
     }
     if (config[['col_params']][[col_names]][['type']] == 'Integer'){
         #Sample from a normal distribution
@@ -81,8 +94,8 @@ simulate_pheno = function(config, col_names){
                               function(x){
                                   set.seed(config[['seed']])
                                   rnorm(config[['n_samples']],
-                                        config[['col_params']][[col_names]][['mean']] + rnorm(1, 0, sd=0.05),
-                                        config[['col_params']][[col_names]][['sd']] + rnorm(1, 0, sd=0.05))})
+                                        config[['col_params']][[col_names]][['mean']] + rnorm(1, 0, sd=0.01),
+                                        config[['col_params']][[col_names]][['sd']] + rnorm(1, 0, sd=0.01))})
         }
         #Sample from a uniform distribution
         if (config[['col_params']][[col_names]][['distribution']] == 'uniform'){
@@ -90,8 +103,8 @@ simulate_pheno = function(config, col_names){
                               function(x){
                                   set.seed(config[['seed']])
                                   runif(config[['n_samples']],
-                                    config[['col_params']][[col_names]][['min']]  + rnorm(1, 0, sd=0.05),
-                                    config[['col_params']][[col_names]][['max']]  + rnorm(1, 0, sd=0.05))})
+                                    config[['col_params']][[col_names]][['min']]  + rnorm(1, 0, sd=0.01),
+                                    config[['col_params']][[col_names]][['max']]  + rnorm(1, 0, sd=0.01))})
         }
         #If only want positive values, use absolute values for negatives
         if (config[['col_params']][[col_names]][['positive_only']]) {
@@ -113,16 +126,16 @@ simulate_pheno = function(config, col_names){
                               function(x){
                                   set.seed(config[['seed']])
                                   rnorm(config[['n_samples']],
-                                        config[['col_params']][[col_names]][['mean']] + rnorm(1, 0, sd=0.05),
-                                        config[['col_params']][[col_names]][['sd']] + rnorm(1, 0, sd=0.05))})
+                                        config[['col_params']][[col_names]][['mean']] + rnorm(1, 0, sd=0.01),
+                                        config[['col_params']][[col_names]][['sd']] + rnorm(1, 0, sd=0.01))})
         }
         if (config[['col_params']][[col_names]][['distribution']] == 'uniform'){
             sym_cols = sapply(combinations,
                               function(x){
                                   set.seed(config[['seed']])
                                   runif(config[['n_samples']],
-                                    config[['col_params']][[col_names]][['min']]  + rnorm(1, 0, sd=0.05),
-                                    config[['col_params']][[col_names]][['max']]  + rnorm(1, 0, sd=0.05))})
+                                    config[['col_params']][[col_names]][['min']]  + rnorm(1, 0, sd=0.01),
+                                    config[['col_params']][[col_names]][['max']]  + rnorm(1, 0, sd=0.01))})
         }
         
         if (config[['col_params']][[col_names]][['positive_only']]) {
