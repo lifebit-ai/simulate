@@ -443,7 +443,7 @@ if (params.simulate_cb_output && params.simulate_cb_output_config) {
       .set { cohort_browser_yaml_config_ch }
 }
 
-if (params.simulate_cb_output && ((params.simulate_cb_output_config) || (params.simulate_query_file && params.simulate_pheno_metadata))) {
+if (params.simulate_cb_output && (params.simulate_cb_output_config || (params.simulate_cb_query_file && params.simulate_cb_pheno_metadata))) {
   
 
   process simulate_cb_output{
