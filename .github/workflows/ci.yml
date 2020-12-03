@@ -66,7 +66,7 @@ jobs:
       - name: Run pipeline with basic test profile and various optional flags 
         run: |
           nextflow run ${GITHUB_WORKSPACE} -profile test_sim_cb_output_plink_only
-    test_sim_cb_output_vcf_only:
+  test_sim_cb_output_vcf_only:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
@@ -77,3 +77,4 @@ jobs:
       - name: Run pipeline with basic test profile and various optional flags 
         run: |
           nextflow run ${GITHUB_WORKSPACE} -profile test_sim_cb_output_vcf_only
+          
