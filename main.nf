@@ -316,7 +316,7 @@ if (params.simulate_plink){
         tuple file(gen), file(sample) from simulated_gen_for_plink_ch
 
         output:
-        file("*.{bed,bim,fam}") into simulated_plink_ch
+        file("*.{bed,bim,fam}") into (simulated_plink_ch, simulated_plink_ch1)
 
         shell:
         out_plink_name=gen.baseName
@@ -414,6 +414,73 @@ if (params.simulate_cb_output && params.simulate_cb_output_config && params.simu
   \nPlease use all --simulate_cb_output, --simulate_cb_query_file and --simulate_cb_pheno_metadata ."
 }
 
+// Get samples IDs depending on which type of data is being generated
+
+if (params.simulate_cb_output && params.simulate_vcf && !params.simulate_plink){
+  // Select the first vcf from the channel and use it to get the sample IDs
+  vcf_ids = compressed_and_indexed_simulated_vcf_ch.first()
+  process get_vcf_ids {
+    publishDir "${params.outdir}/simulated_cohort_browser_data", mode: 'copy'
+
+    input:
+    file vcf_ids
+
+    output:
+    file("*.txt") into sample_id_ch
+
+    script:
+    """
+    bcftools query --list-samples $vcf_ids > samples_id.txt
+    """
+
+
+  }
+}
+
+if (params.simulate_cb_output && params.simulate_plink && !params.simulate_vcf){
+  // Select the first fam file from the channel and use it to get the sample IDs
+  fam_ids = simulated_plink_ch1.flatten().last()
+  fam_ids.view()
+
+  process get_plink_ids {
+    publishDir "${params.outdir}/simulated_cohort_browser_data", mode: 'copy'
+
+    input:
+    file fam_ids
+
+    output:
+    file("*.txt") into sample_id_ch
+
+    shell:
+    '''
+    awk '{print $1}' !{fam_ids} > samples_id.txt
+    '''
+    
+  }
+}
+
+if (params.simulate_cb_output && params.simulate_vcf && params.simulate_plink){
+  // Select the first vcf from the channel and use it to get the sample IDs
+  vcf_ids = compressed_and_indexed_simulated_vcf_ch.first()
+  vcf_ids.view()
+  process get_vcf_ids_all {
+    publishDir "${params.outdir}/simulated_cohort_browser_data", mode: 'copy'
+
+    input:
+    file vcf_ids 
+
+    output:
+    file("*.txt") into sample_id_ch
+
+    script:
+    """
+    bcftools query --list-samples $vcf_ids > samples_id.txt
+    """
+
+
+  }
+}
+
 // Start processes
 
 if (params.simulate_cb_output && params.simulate_cb_query_file && params.simulate_cb_pheno_metadata){
@@ -463,6 +530,7 @@ if (params.simulate_cb_output && (params.simulate_cb_output_config || (params.si
 
     input:
     file(config) from cohort_browser_yaml_config_ch
+    file(sample_id) from sample_id_ch
 
     output:
     file("${params.simulate_cb_output_output_tag}_pheno_data.csv") into simulated_cb_pheno_data_ch
@@ -471,6 +539,7 @@ if (params.simulate_cb_output && (params.simulate_cb_output_config || (params.si
     script:
     """
     simulate_cb_output.R --config_file "${config}" \
+                         --sample_id_file "${sample_id}" \
                          --outprefix "${params.simulate_cb_output_output_tag}"
     """
   }

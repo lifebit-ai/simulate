@@ -1,5 +1,5 @@
 params:    
-    n_samples: 100
+    n_samples: 40
     seed: 777
     col_params:
         pheno_col:
