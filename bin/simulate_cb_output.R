@@ -51,6 +51,9 @@ if (pheno_data != 'None') {
 ##########################################
 simulate_pheno = function(config, col_names){
     #create column names for instances and arrays
+    if (col_names == "pheno_col"){
+        return()
+    }
     combinations = expand.grid(col_names, 
                                 0:(config[['col_params']][[col_names]][['n_instances']]-1),
                                 0:(config[['col_params']][[col_names]][['n_arrays']]-1))
@@ -73,15 +76,20 @@ simulate_pheno = function(config, col_names){
                                  config[['n_samples']],
                                  replace=T,
                                  prob=prob_vector)
-            sym_cols = list(combinations[1] = sym_cols) %>% as_tibble()
+            sym_cols = sym_cols %>% as_tibble() 
+            colnames(sym_cols) = combinations[1] 
+            print(sym_cols)
             return(sym_cols)
         }
         if (col_names != config[['col_params']][['pheno_col']][['name']]){
-
-            prob_vector = case_when(config[['col_params']][[col_names]][['prob']] != NULL ~ config[['col_params']][[col_names]][['prob']],
-                                    TRUE ~ rep(1/length(config[['col_params']][[col_names]][['values']]), 
-                                                length(config[['col_params']][[col_names]][['values']])))
-                                                
+            if (length(config[['col_params']][[col_names]][['prob']]) > 0){
+                prob_vector = config[['col_params']][[col_names]][['prob']]
+            }
+            if (length(config[['col_params']][[col_names]][['prob']]) == 0){
+                prob_vector = rep(1/length(config[['col_params']][[col_names]][['values']]), 
+                                                length(config[['col_params']][[col_names]][['values']]))
+            }
+            
             # Sample categorical data from the values in the config
             sym_cols = sapply(combinations,
                                 function(x) sample(config[['col_params']][[col_names]][['values']], 
@@ -89,9 +97,11 @@ simulate_pheno = function(config, col_names){
                                         replace=T,
                                         prob=prob_vector))
             # Get all NA for n random columns
-            col_to_na = sample(colnames(sym_cols), config[['col_params']][[col_names]][['n_missing_col']])
-            sym_cols[sym_cols == 'NA'] = ""
-            sym_cols[, col_to_na] = ""
+            if (length(config[['col_params']][[col_names]][['n_missing_col']]) > 0){
+                col_to_na = sample(colnames(sym_cols), config[['col_params']][[col_names]][['n_missing_col']])
+                sym_cols[sym_cols == 'NA'] = ""
+                sym_cols[, col_to_na] = ""
+            }
             return(sym_cols %>% as.tibble())
         }
     }
@@ -115,16 +125,15 @@ simulate_pheno = function(config, col_names){
                                     config[['col_params']][[col_names]][['max']]  + rnorm(1, 0, sd=0.01))})
         }
         #If only want positive values, use absolute values for negatives
-        if (config[['col_params']][[col_names]][['positive_only']]) {
-            sym_cols = abs(sym_cols)
-        }
-        #Transform columns in NA
-        col_to_na = sample(colnames(sym_cols), config[['col_params']][[col_names]][['n_missing_col']])
-        sym_cols[, col_to_na] = NA
-        mask = sapply(combinations,
-        function(x) sample(c(TRUE, FALSE), config[['n_samples']], replace=T, prob=c(config[['col_params']][[col_names]][['frac_missing']], 1-config[['col_params']][[col_names]][['frac_missing']]))
-        )
-        sym_cols[mask] = NA
+        sym_cols = abs(sym_cols)
+
+        # #Transform columns in NA
+        # col_to_na = sample(colnames(sym_cols), config[['col_params']][[col_names]][['n_missing_col']])
+        # sym_cols[, col_to_na] = NA
+        # mask = sapply(combinations,
+        # function(x) sample(c(TRUE, FALSE), config[['n_samples']], replace=T, prob=c(config[['col_params']][[col_names]][['frac_missing']], 1-config[['col_params']][[col_names]][['frac_missing']]))
+        # )
+        # sym_cols[mask] = NA
         return(floor(sym_cols) %>% as.tibble())
     }
     if (config[['col_params']][[col_names]][['type']] == 'Continuous'){
@@ -145,17 +154,15 @@ simulate_pheno = function(config, col_names){
                                     config[['col_params']][[col_names]][['min']]  + rnorm(1, 0, sd=0.01),
                                     config[['col_params']][[col_names]][['max']]  + rnorm(1, 0, sd=0.01))})
         }
+        sym_cols = abs(sym_cols)
         
-        if (config[['col_params']][[col_names]][['positive_only']]) {
-            sym_cols = abs(sym_cols)
-        }
 
-        col_to_na = sample(colnames(sym_cols), config[['col_params']][[col_names]][['n_missing_col']])
-        sym_cols[, col_to_na] = NA
-        mask = sapply(combinations,
-        function(x) sample(c(TRUE, FALSE), config[['n_samples']], replace=T, prob=c(config[['col_params']][[col_names]][['frac_missing']], 1-config[['col_params']][[col_names]][['frac_missing']]))
-        )
-        sym_cols[mask] = NA
+        # col_to_na = sample(colnames(sym_cols), config[['col_params']][[col_names]][['n_missing_col']])
+        # sym_cols[, col_to_na] = NA
+        # mask = sapply(combinations,
+        # function(x) sample(c(TRUE, FALSE), config[['n_samples']], replace=T, prob=c(config[['col_params']][[col_names]][['frac_missing']], 1-config[['col_params']][[col_names]][['frac_missing']]))
+        # )
+        # sym_cols[mask] = NA
         return(sym_cols %>% as.tibble())        
     }
     if (config[['col_params']][[col_names]][['type']] == 'Date'){
@@ -167,12 +174,12 @@ simulate_pheno = function(config, col_names){
                                 size=config[['n_samples']], 
                                 replace=T), simplify=FALSE) %>% as.tibble()
         #Introduce NAs
-        col_to_na = sample(colnames(sym_cols), config[['col_params']][[col_names]][['n_missing_col']])
-        sym_cols[, col_to_na] = NA
-        mask = sapply(combinations,
-        function(x) sample(c(TRUE, FALSE), config[['n_samples']], replace=T, prob=c(config[['col_params']][[col_names]][['frac_missing']], 1-config[['col_params']][[col_names]][['frac_missing']]))
-        )
-        sym_cols[mask] = NA
+        # col_to_na = sample(colnames(sym_cols), config[['col_params']][[col_names]][['n_missing_col']])
+        # sym_cols[, col_to_na] = NA
+        # mask = sapply(combinations,
+        # function(x) sample(c(TRUE, FALSE), config[['n_samples']], replace=T, prob=c(config[['col_params']][[col_names]][['frac_missing']], 1-config[['col_params']][[col_names]][['frac_missing']]))
+        # )
+        # sym_cols[mask] = NA
         return(sym_cols)  
     }
 }

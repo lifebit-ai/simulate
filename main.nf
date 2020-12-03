@@ -420,13 +420,13 @@ if (params.simulate_cb_output && params.simulate_cb_query_file && params.simulat
     file(query) from cohort_browser_query_file_ch
 
     output:
-    file("${params.simulate_cb_output_output_tag}.yaml") into cohort_browser_yaml_config_ch
+    file("${params.simulate_cb_output_output_tag}.yml") into cohort_browser_yaml_config_ch
 
     script:
     """
     generate_sim_config.R --pheno_metadata "$metadata" \
                           --query "$query" \
-                          --n_samples "${params.num_participants}" \
+                          --n_samples ${params.num_participants} \
                           --pheno_col_name "${params.simulate_cb_pheno_col_name}" \
                           --pheno_col_type "${params.simulate_cb_pheno_col_type}" \
                           --pheno_col_fraction_of_cases ${params.simulate_cb_pheno_col_fraction_of_cases} \

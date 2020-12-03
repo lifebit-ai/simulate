@@ -57,7 +57,7 @@ pheno_dictionary = fread(pheno_metadata) %>%
         as.tibble # Change by metadata input var
 colnames(pheno_dictionary) = colnames(pheno_dictionary) %>%
                              to_snake_case(sep_in = ":|\\(|\\)|(?<!\\d)\\.")
-
+print('Here1')
 # Import query json
 if (query_file != 'None'){
     pheno_id = colnames(pheno_dictionary)[colnames(pheno_dictionary) %in% c('id','field_id')]
@@ -70,7 +70,7 @@ if (query_file != 'None'){
 # Temporal fix for working with testing version of phenodata and real pheno seamlessly
 # valueType in testing points to the type of visualization, in real data points to the real datatype
 # Causes bugs when working with testing and GEL
-
+print('here2')
 #Real
 if (sum(c('value_type', 'type') %in% colnames(query_df)) > 1){
     type_col = colnames(query_df)[str_detect(colnames(query_df), '^value.*type$')]
@@ -82,9 +82,9 @@ if (sum(c('value_type', 'field_id_type') %in% colnames(query_df)) > 1){
 name_col = colnames(query_df)[str_detect(colnames(query_df), '^name|^field.*name$')]
 column_to_keep = c('column.id', name_col, type_col, "array", 'instances','low','high','values')
 query_df = query_df %>% select(all_of(column_to_keep))
-
+print('here3')
 config_list = list(params=list(n_samples=n_samples,
-                               seed=777, 
+                               seed=as.integer(777), 
                                col_params=list(pheno_col=list(name=pheno_col_name,
                                                               type=pheno_col_type,
                                                               fraction_of_cases=pheno_col_fraction_of_cases,
@@ -122,5 +122,5 @@ for (i in 1:dim(query_df)[1]){
                                                                     values= query_df$values[[i]]) 
     }
 }
-
-write_yaml(config_list, paste0(outprefix,'.yml')
+print(config_list)
+write_yaml(config_list, paste0(outprefix,'.yml'))
