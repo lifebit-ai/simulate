@@ -19,6 +19,8 @@ option_list = list(
               help="String containing path/URL to input pheno data use as template for sampling."),
   make_option(c("--config_file"), action="store", default='None', type='character',
               help="String containing path/URL to input pheno data use as template for sampling."),
+  make_option(c("--sample_id_file"), action="store", default='None', type='character',
+              help="String containing path/URL to input pheno data use as sample_ids."),
   make_option(c("--outprefix"), action="store", default='sim_1', type='character',
               help="String containing output simulated prefixes.")
 )
@@ -28,6 +30,7 @@ args = parse_args(OptionParser(option_list=option_list))
 # Args to variables
 pheno_data              = args$pheno_data
 config_file             = args$config_file
+sample_id_file          = args$sample_id_file
 outprefix               = args$outprefix
 
 
@@ -184,9 +187,10 @@ simulate_pheno = function(config, col_names){
     }
 }
 if (pheno_data == 'None'){
+    platekeys = readLines(sample_id_file)
     #Run everything and add fake platekey IDs
     sym_data = sapply(names(config[['col_params']]), function(x) simulate_pheno(config, x), simplify=FALSE) %>% bind_cols()
-    sym_data['Platekey_in_aggregate_VCF-0.0'] = paste0('id',0:(config[['n_samples']]-1),'_', 'id',0:(config[['n_samples']]-1))
+    sym_data['Platekey_in_aggregate_VCF-0.0'] = platekeys
     sym_data['i'] = 1:(config[['n_samples']])
     write.csv(sym_data, paste0(outprefix, '_pheno_data.csv'), quote=FALSE, row.names=FALSE)
 
