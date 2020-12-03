@@ -42,6 +42,12 @@ def helpMessage() {
     --simulate_cb_output             whether or not you wish to simulate the cohort browser (CB) output data - this can subsequently be used by lifebit-ai/gel-gwas (default: false)
     --simulate_cb_output_config      the YAML config file used to simulate cohort browser data with (must be provided if --simulate_cb_output is set to true )
     --simulate_cb_output_output_tag  the outprefix you wish to give to the simulated cohort browser data (default: `simulated`)
+    --simulate_cb_output_query_file  path to query.json file to be used with metadata in order to generate CB data output
+    --simulate_cb_pheno_metadata     path to metadata file to be used with query.json to produce CB data output
+    --simulate_cb_pheno_col_name     name of phenotypic column to be used for analysis
+    --simulate_cb_pheno_col_type     type of the phenotypic column
+    --simulate_cb_pheno_col_fraction_of_cases     fraction of cases in the phenotypic column when this is binary
+    --simulate_cb_pheno_col_case_group    name of the case group in the phenotypic column
     """.stripIndent()
 }
 
@@ -85,7 +91,13 @@ summary['gwas_pheno_trait_type']          = params.gwas_pheno_trait_type
 summary['gwas_disease_prevalance']        = params.gwas_disease_prevalance
 summary['gwas_simulation_replicates']     = params.gwas_simulation_replicates
 summary['simulate_cb_output']             = params.simulate_cb_output
-summary['simulate_cb_output_config']      = params.simulate_cb_output_config   
+summary['simulate_cb_output_config']      = params.simulate_cb_output_config
+summary['simulate_cb_output_query_file']  = params.simulate_cb_query_file
+summary['simulate_cb_pheno_metadata']     = params.simulate_cb_pheno_metadata
+summary['simulate_cb_pheno_col_name']     = params.simulate_cb_pheno_col_name
+summary['simulate_cb_pheno_col_type']     = params.simulate_cb_pheno_col_type
+summary['simulate_cb_pheno_col_fraction_of_cases']     = params.simulate_cb_pheno_col_fraction_of_cases
+summary['simulate_cb_pheno_col_case_group']     = params.simulate_cb_pheno_col_name
 summary['simulate_cb_output_output_tag']  = params.simulate_cb_output_output_tag 
 
 log.info summary.collect { k,v -> "${k.padRight(18)}: $v" }.join("\n")

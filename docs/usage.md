@@ -59,4 +59,17 @@ nextflow run main.nf --num_participants 40
 
 - **simulate_cb_output_output_tag**: the outprefix you wish to give to the simulated cohort browser data (default: `simulated`)
 
+- **simulate_cb_output_query_file** :  path to query.json file to be used with metadata in order to generate CB data output
+
+- **simulate_cb_pheno_metadata** :     path to metadata file to be used with query.json to produce CB data output
+
+- **simulate_cb_pheno_col_name** :     name of phenotypic column to be used for analysis
+
+- **simulate_cb_pheno_col_type** :     type of the phenotypic column
+
+- **simulate_cb_pheno_col_fraction_of_cases**     fraction of cases in the phenotypic column when this is binary
+
+- **simulate_cb_pheno_col_case_group** :    name of the case group in the phenotypic column
+    
+
 
