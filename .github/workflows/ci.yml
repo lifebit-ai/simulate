@@ -35,8 +35,6 @@ jobs:
           nextflow run ${GITHUB_WORKSPACE} --gwas_pheno_trait_type ${{ matrix.gwas_pheno_trait_type }} --effective_population_size ${{ matrix.effective_population_size }} -profile test
   test_sim_cb_output_query:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
     steps:
       - uses: actions/checkout@v1
       - name: Install Nextflow
@@ -48,8 +46,6 @@ jobs:
           nextflow run ${GITHUB_WORKSPACE} -profile test_sim_cb_output_query
   test_sim_cb_output_yaml:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
     steps:
       - uses: actions/checkout@v1
       - name: Install Nextflow
@@ -59,4 +55,4 @@ jobs:
       - name: Run pipeline with basic test profile and various optional flags 
         run: |
           nextflow run ${GITHUB_WORKSPACE} -profile test_sim_cb_output_yaml
-          
+       
