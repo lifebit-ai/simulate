@@ -22,8 +22,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
+        effective_population_size: ['11418', '11000']
         gwas_pheno_trait_type: ['binary', 'quantitative']
-        effective_population_size: ['11418','11000']
+        gwas_simulation_replicates: ['1', '2']
     steps:
       - uses: actions/checkout@v1
       - name: Install Nextflow
@@ -32,6 +33,18 @@ jobs:
           sudo mv nextflow /usr/local/bin/
       - name: Run pipeline with basic test profile and various optional flags 
         run: |
-          nextflow run ${GITHUB_WORKSPACE} --gwas_pheno_trait_type ${{ matrix.gwas_pheno_trait_type }} --effective_population_size ${{ matrix.effective_population_size }} -profile test
+          nextflow run ${GITHUB_WORKSPACE} --effective_population_size ${{ matrix.effective_population_size }} --gwas_pheno_trait_type ${{ matrix.gwas_pheno_trait_type }} --gwas_simulation_replicates ${{ matrix.gwas_simulation_replicates }}  -profile test
+  cohort_browser_output_test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install Nextflow
+        run: |
+          wget -qO- get.nextflow.io | bash
+          sudo mv nextflow /usr/local/bin/
+      - name: Run pipeline with cohort browser simulation profile 
+        run: |
+          nextflow run ${GITHUB_WORKSPACE} -profile cb
+
 
           
