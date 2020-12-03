@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        effective_population_size: ['11418','11000']
+        effective_population_size: [11418, 11000]
         gwas_pheno_trait_type: ['binary', 'quantitative']
         gwas_simulation_replicates: ['1', '2']
     steps:
