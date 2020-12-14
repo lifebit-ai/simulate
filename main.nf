@@ -143,14 +143,14 @@ process download_leg_files {
     publishDir "${params.outdir}/leg-data", mode: "copy"
     
     input:
-    file("all_leg.tar.gz") from legend_for_hapgen2_file_ch
+    file(leg_archive) from legend_for_hapgen2_file_ch
 
     output:
     file("*leg") into downloaded_leg_files_ch
 
     script:
     """
-    tar xvzf all_leg.tar.gz -C .
+    tar xvzf ${leg_archive} -C .
     """
 }
 
@@ -177,7 +177,7 @@ process download_1000G {
     publishDir "${params.outdir}/1000G-data", mode: "copy"
     
     input:
-    file("ALL_1000G_phase1integrated_v3_impute.tgz") from reference_1000G_ch
+    file(all_1000G_phase1integrated_v3_impute_tgz) from reference_1000G_ch
 
     output:
     file("*combined_b37.txt") into downloaded_1000G_genetic_map_ch
@@ -185,7 +185,7 @@ process download_1000G {
 
     script:
     """
-    tar xvzf ALL_1000G_phase1integrated_v3_impute.tgz --strip-components 1
+    tar xvzf ${all_1000G_phase1integrated_v3_impute_tgz} --strip-components 1
     """
 }
 
