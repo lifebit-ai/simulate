@@ -277,7 +277,7 @@ if (params.simulate_vcf){
     plink2 \
     --gen !{gen} ref-unknown \
     --sample !{sample} \
-    --recode vcf \
+    --recode vcf-iid \
     --out !{out_vcf_name} \
     '''
     }
