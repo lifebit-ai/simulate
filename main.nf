@@ -139,6 +139,7 @@ Channel
     .set { legend_for_hapgen2_file_ch }
 
 process download_leg_files {
+    tag "${leg_archive}"
     label "high_memory"
     publishDir "${params.outdir}/leg-data", mode: "copy"
     
@@ -173,6 +174,7 @@ Channel
     .set { reference_1000G_ch }
 
 process download_1000G {
+    tag "${all_1000G_phase1integrated_v3_impute_tgz}"
     label "high_memory"
     publishDir "${params.outdir}/1000G-data", mode: "copy"
     
@@ -216,6 +218,7 @@ all_ref_ch = genetic_map_ch.join(hap_ch)
 all_hapgen_inputs_ch = all_ref_ch.join(legend_for_hapgen2_ch)
 
 process simulate_gen_and_sample {
+    tag "chr:${chr}-map:${map}-hap:${hap}-leg:${leg}"
     label "high_memory"
     publishDir "${params.outdir}/simulated_hapgen", mode: "copy"
     
@@ -263,6 +266,7 @@ process simulate_gen_and_sample {
 
 if (params.simulate_vcf){
   process simulate_vcf {
+    tag "gen:${gen}-sample:${sample}"
     publishDir "${params.outdir}/simulated_vcf/not_compressed_and_indexed", mode: "copy"
 
     input:
@@ -285,6 +289,7 @@ if (params.simulate_vcf){
 
     process compress_and_index_vcf {
       publishDir "${params.outdir}/simulated_vcf/compressed_and_indexed", mode: "copy"
+      tag "vcf:${vcf}"
 
       input:
       file(vcf) from not_compressed_and_indexed_simulated_vcf_ch
@@ -312,6 +317,7 @@ if (params.simulate_vcf){
 if (params.simulate_plink){
     process simulate_plink {
         publishDir "${params.outdir}/simulated_plink", mode: "copy"
+        tag "gen:${gen}-sample:${sample}"
 
         input:
         tuple file(gen), file(sample) from simulated_gen_for_plink_ch
@@ -359,6 +365,7 @@ if (params.gwas_cases && params.gwas_controls) {
 if ( params.simulate_plink && params.simulate_gwas_sum_stats && params.gwas_cases && params.gwas_controls){
   process simulate_gwas_sum_stats {
     publishDir "${params.outdir}/simulated_gwas_sum_stats", mode: "copy"
+    tag "bed:${bed}-bim:${bim}-fam:${fam}"
 
     input:
     tuple file(bed), file(bim), file(fam) from simulated_plink_ch
@@ -422,6 +429,7 @@ if (params.simulate_cb_output && params.simulate_vcf && !params.simulate_plink){
   vcf_ids = compressed_and_indexed_simulated_vcf_ch.first()
   process get_vcf_ids {
     publishDir "${params.outdir}/simulated_cohort_browser_data", mode: 'copy'
+    tag "vcf_ids:${vcf_ids}"
 
     input:
     file vcf_ids
@@ -445,6 +453,7 @@ if (params.simulate_cb_output && params.simulate_plink && !params.simulate_vcf){
 
   process get_plink_ids {
     publishDir "${params.outdir}/simulated_cohort_browser_data", mode: 'copy'
+    tag "fam_ids:${fam_ids}"
 
     input:
     file fam_ids
@@ -466,6 +475,7 @@ if (params.simulate_cb_output && params.simulate_vcf && params.simulate_plink){
   vcf_ids.view()
   process get_vcf_ids_all {
     publishDir "${params.outdir}/simulated_cohort_browser_data", mode: 'copy'
+    tag "vcf_ids:${vcf_ids}"
 
     input:
     file vcf_ids 
@@ -494,6 +504,7 @@ if (params.simulate_cb_output && params.simulate_cb_query_file && params.simulat
 
   process simulate_pheno_config_file{
     publishDir "${params.outdir}/simulated_cohort_browser_data", mode: 'copy'
+    tag "metadata:${metadata}-query:${query}"
 
     input: 
     file(metadata) from cohort_browser_pheno_metadata_file_ch
@@ -528,6 +539,7 @@ if (params.simulate_cb_output && (params.simulate_cb_output_config || (params.si
 
   process simulate_cb_output{
     publishDir "${params.outdir}/simulated_cohort_browser_data", mode: 'copy'
+    tag "config:${config}-sample_id:${sample_id}"
 
     input:
     file(config) from cohort_browser_yaml_config_ch
