@@ -229,6 +229,7 @@ process simulate_gen_and_sample {
     position = leg.baseName.split("-")[1]
     unzipped_hap = hap.baseName
     '''
+    position=`head !{leg} | awk '{print $2}' | head -2 | tail -1`
     # Gunzip the relevant hap file
     gunzip -f !{hap}
  
@@ -239,7 +240,7 @@ process simulate_gen_and_sample {
     -h !{unzipped_hap} \
     -o !{chr}-simulated_hapgen \
     -n !{params.num_participants} 0 \
-    -dl !{position} 0 0 0 \
+    -dl ${position} 0 0 0 \
     -no_haps_output !{extra_hapgen2_flags}
 
     # Rename output files (phenotypes are not relevant at this stage)
