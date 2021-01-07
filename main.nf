@@ -33,8 +33,7 @@ def helpMessage() {
     --simulate_vcf                   simulate VCF files (default: false)
     --simulate_plink                 simulate PLINK files (default: false)           
     --simulate_gwas_sum_stats        simulate GWAS summary statistics (default: false)
-    --gwas_cases                     the number of cases to simulate for the GWAS summary statistics (the total with controls should match --effective_population_size, see docs/usage.md for important details on how to interpret the GCTA output)
-    --gwas_controls                  the number of controls to simulate for the GWAS summary statistics (the total with cases should match --effective_population_size, see docs/usage.md for important details on how to interpret the GCTA output)
+    --gwas_cases                     the number of cases to simulate for the GWAS summary statistics, represented as a fraction of --num_participants (between 0 and 1) (see docs/usage.md for important details on how to interpret the GCTA output)
     --gwas_pheno_trait_type          type of trait of interest (pheno_col) to use when simulating GWAS summary statistics with GTCA (available: `binary`, `quantitative` ; default: `binary`)
     --gwas_heritability              heritibility for simulating GWAS summary statistics (default: 0.1)
     --gwas_disease_prevalance        disease prevalence for simulating GWAS summary statistics (default: 0.1)
@@ -80,7 +79,6 @@ summary['simulate_vcf']                   = params.simulate_vcf
 summary['simulate_plink']                 = params.simulate_plink
 summary['simulate_gwas_sum_stats']        = params.simulate_gwas_sum_stats
 summary['gwas_cases']                     = params.gwas_cases
-summary['gwas_controls']                  = params.gwas_controls
 summary['gwas_pheno_trait_type']          = params.gwas_pheno_trait_type
 summary['gwas_disease_prevalance']        = params.gwas_disease_prevalance
 summary['gwas_simulation_replicates']     = params.gwas_simulation_replicates
