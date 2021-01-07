@@ -63,7 +63,6 @@ def summary = [:]
 
 if (workflow.revision) summary['Pipeline Release'] = workflow.revision
 
-summary['Max Resources']                  = "$params.max_memory memory, $params.max_cpus cpus, $params.max_time time per job"
 summary['Output dir']                     = params.outdir
 summary['Launch dir']                     = workflow.launchDir
 summary['Working dir']                    = workflow.workDir
@@ -328,20 +327,8 @@ if (!params.simulate_plink && params.simulate_gwas_sum_stats) {
   \nPlease set both --simulate_plink and --simulate_gwas_sum_stats to true."
 }
 
-// Check that the number of cases and controls to simulate match the total number of simulated participants.
-if (params.gwas_cases && params.gwas_controls) {
+if ( params.simulate_plink && params.simulate_gwas_sum_stats && params.gwas_cases){
 
-  def cases_num = params.gwas_cases
-  def controls_num = params.gwas_controls
-  def total = cases_num + controls_num
-  
-  if (params.num_participants != total) {
-    exit 1, "The number of cases and controls to simulate in the GWAS summary statistics must match the total number of simulated participants. \
-    \nPlease ensure that the sum of --gwas_cases and --gwas_controls match --num_participants."
-    }
-}
-
-if ( params.simulate_plink && params.simulate_gwas_sum_stats && params.gwas_cases && params.gwas_controls){
   process simulate_gwas_sum_stats {
     publishDir "${params.outdir}/simulated_gwas_sum_stats", mode: "copy"
 
@@ -352,8 +339,21 @@ if ( params.simulate_plink && params.simulate_gwas_sum_stats && params.gwas_case
     file("*") into simulated_gwas_sum_stats_ch
 
     shell:
-    bfile_name=bed.baseName
-    chr=bfile_name.split("-")[0]
+    // Calculate number of cases based on --gwas_cases.
+    // Then round the number down to represent a real number of participants (i.e. an integer).
+    // Then determine number of controls based off of it.
+    proportion_cases = params.gwas_cases
+    total_participants = params.num_participants
+  
+    cases_num = proportion_cases * total_participants
+    rounded_case_num = (int)cases_num
+  
+    controls_num = total_participants - rounded_case_num
+
+    // Obtain name of binary PLINK file and chromosome 
+    bfile_name = bed.baseName
+    chr = bfile_name.split("-")[0]
+
     '''
     # Create list of causal SNPs required by GCTA
     cut -f2 !{bim} | head -n 10 > !{chr}-causal.snplist
@@ -361,7 +361,7 @@ if ( params.simulate_plink && params.simulate_gwas_sum_stats && params.gwas_case
     # Run GCTA
     gcta64 \
     --bfile !{bfile_name} \
-    --simu-cc !{params.gwas_cases} !{params.gwas_controls} \
+    --simu-cc !{rounded_case_num} !{controls_num} \
     --simu-causal-loci !{chr}-causal.snplist \
     --out !{chr}-gwas-statistics \
     !{extra_gcta_flags}
@@ -405,3 +405,5 @@ if (params.simulate_cb_output && params.simulate_cb_output_config) {
   }
 
 }
+
+
