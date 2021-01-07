@@ -33,7 +33,7 @@ def helpMessage() {
     --simulate_vcf                   simulate VCF files (default: false)
     --simulate_plink                 simulate PLINK files (default: false)           
     --simulate_gwas_sum_stats        simulate GWAS summary statistics (default: false)
-    --gwas_cases                     the number of cases to simulate for the GWAS summary statistics, represented as a fraction of --num_participants (between 0 and 1) (see docs/usage.md for important details on how to interpret the GCTA output)
+    --gwas_cases                     the number of cases to simulate for the GWAS summary statistics, represented as a fraction of --num_participants (between 0 and 1) (see docs/usage.md for important additional details including on how to interpret the GCTA output)
     --gwas_pheno_trait_type          type of trait of interest (pheno_col) to use when simulating GWAS summary statistics with GTCA (available: `binary`, `quantitative` ; default: `binary`)
     --gwas_heritability              heritibility for simulating GWAS summary statistics (default: 0.1)
     --gwas_disease_prevalance        disease prevalence for simulating GWAS summary statistics (default: 0.1)
