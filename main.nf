@@ -206,6 +206,7 @@ process simulate_gen_and_sample {
     
     input:
     tuple val(chr), file(map), file(hap), file(leg) from all_hapgen_inputs_ch
+    val num_participants from params.num_participants
 
     output:
     file("*{simulated_hapgen-updated.gen,simulated_hapgen-updated.sample}") into (simulated_gen_for_vcf_ch, simulated_gen_for_plink_ch)
@@ -223,7 +224,7 @@ process simulate_gen_and_sample {
     -l !{leg} \
     -h !{unzipped_hap} \
     -o !{chr}-simulated_hapgen \
-    -n !{params.num_participants} 0 \
+    -n !{num_participants} 0 \
     -dl !{position} 0 0 0 \
     -no_haps_output !{extra_hapgen2_flags}
 
@@ -340,6 +341,8 @@ if ( params.simulate_plink && params.simulate_gwas_sum_stats && params.gwas_case
 
     input:
     tuple file(bed), file(bim), file(fam) from simulated_plink_ch
+    val gwas_cases from params.gwas_cases
+    val num_participants from params.num_participants
 
     output:
     file("*") into simulated_gwas_sum_stats_ch
@@ -348,8 +351,8 @@ if ( params.simulate_plink && params.simulate_gwas_sum_stats && params.gwas_case
     // Calculate number of cases based on --gwas_cases.
     // Then round the number down to represent a real number of participants (i.e. an integer).
     // Then determine number of controls based off of it.
-    proportion_cases = params.gwas_cases
-    total_participants = params.num_participants
+    proportion_cases = gwas_cases
+    total_participants = num_participants
   
     cases_num = proportion_cases * total_participants
     rounded_case_num = (int)cases_num
