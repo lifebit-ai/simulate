@@ -33,8 +33,7 @@ def helpMessage() {
     --simulate_vcf                   simulate VCF files (default: false)
     --simulate_plink                 simulate PLINK files (default: false)           
     --simulate_gwas_sum_stats        simulate GWAS summary statistics (default: false)
-    --gwas_cases                     the number of cases to simulate for the GWAS summary statistics (the total with controls should match --effective_population_size, see docs/usage.md for important details on how to interpret the GCTA output)
-    --gwas_controls                  the number of controls to simulate for the GWAS summary statistics (the total with cases should match --effective_population_size, see docs/usage.md for important details on how to interpret the GCTA output)
+    --gwas_cases                     the number of cases to simulate for the GWAS summary statistics, represented as a fraction of --num_participants (bigger than 0 and up to 1) (default: 0.5) (see docs/usage.md for important additional details including on how to interpret the GCTA output)
     --gwas_pheno_trait_type          type of trait of interest (pheno_col) to use when simulating GWAS summary statistics with GTCA (available: `binary`, `quantitative` ; default: `binary`)
     --gwas_heritability              heritibility for simulating GWAS summary statistics (default: 0.1)
     --gwas_disease_prevalance        disease prevalence for simulating GWAS summary statistics (default: 0.1)
@@ -64,7 +63,6 @@ def summary = [:]
 
 if (workflow.revision) summary['Pipeline Release'] = workflow.revision
 
-summary['Max Resources']                  = "$params.max_memory memory, $params.max_cpus cpus, $params.max_time time per job"
 summary['Output dir']                     = params.outdir
 summary['Launch dir']                     = workflow.launchDir
 summary['Working dir']                    = workflow.workDir
@@ -80,7 +78,6 @@ summary['simulate_vcf']                   = params.simulate_vcf
 summary['simulate_plink']                 = params.simulate_plink
 summary['simulate_gwas_sum_stats']        = params.simulate_gwas_sum_stats
 summary['gwas_cases']                     = params.gwas_cases
-summary['gwas_controls']                  = params.gwas_controls
 summary['gwas_pheno_trait_type']          = params.gwas_pheno_trait_type
 summary['gwas_disease_prevalance']        = params.gwas_disease_prevalance
 summary['gwas_simulation_replicates']     = params.gwas_simulation_replicates
@@ -209,6 +206,7 @@ process simulate_gen_and_sample {
     
     input:
     tuple val(chr), file(map), file(hap), file(leg) from all_hapgen_inputs_ch
+    val num_participants from params.num_participants
 
     output:
     file("*{simulated_hapgen-updated.gen,simulated_hapgen-updated.sample}") into (simulated_gen_for_vcf_ch, simulated_gen_for_plink_ch)
@@ -226,7 +224,7 @@ process simulate_gen_and_sample {
     -l !{leg} \
     -h !{unzipped_hap} \
     -o !{chr}-simulated_hapgen \
-    -n !{params.num_participants} 0 \
+    -n !{num_participants} 0 \
     -dl !{position} 0 0 0 \
     -no_haps_output !{extra_hapgen2_flags}
 
@@ -330,32 +328,41 @@ if (!params.simulate_plink && params.simulate_gwas_sum_stats) {
   \nPlease set both --simulate_plink and --simulate_gwas_sum_stats to true."
 }
 
-// Check that the number of cases and controls to simulate match the total number of simulated participants.
-if (params.gwas_cases && params.gwas_controls) {
-
-  def cases_num = params.gwas_cases
-  def controls_num = params.gwas_controls
-  def total = cases_num + controls_num
-  
-  if (params.num_participants != total) {
-    exit 1, "The number of cases and controls to simulate in the GWAS summary statistics must match the total number of simulated participants. \
-    \nPlease ensure that the sum of --gwas_cases and --gwas_controls match --num_participants."
-    }
+// Check that --gwas_cases is bigger than 0 and no larger than 1
+if (params.gwas_cases <= 0 | params.gwas_cases > 1) {
+  exit 1, "The proportion of cases (--gwas_cases) supplied is invalid. \
+  \nPlease set --gwas_cases to a value bigger than 0 and up to 1. For example, --gwas_cases 0.4."
 }
 
-if ( params.simulate_plink && params.simulate_gwas_sum_stats && params.gwas_cases && params.gwas_controls){
+if ( params.simulate_plink && params.simulate_gwas_sum_stats && params.gwas_cases){
+
   process simulate_gwas_sum_stats {
     publishDir "${params.outdir}/simulated_gwas_sum_stats", mode: "copy"
 
     input:
     tuple file(bed), file(bim), file(fam) from simulated_plink_ch
+    val gwas_cases from params.gwas_cases
+    val num_participants from params.num_participants
 
     output:
     file("*") into simulated_gwas_sum_stats_ch
 
     shell:
-    bfile_name=bed.baseName
-    chr=bfile_name.split("-")[0]
+    // Calculate number of cases based on --gwas_cases.
+    // Then round the number down to represent a real number of participants (i.e. an integer).
+    // Then determine number of controls based off of it.
+    proportion_cases = gwas_cases
+    total_participants = num_participants
+  
+    cases_num = proportion_cases * total_participants
+    rounded_case_num = (int)cases_num
+  
+    controls_num = total_participants - rounded_case_num
+
+    // Obtain name of binary PLINK file and chromosome 
+    bfile_name = bed.baseName
+    chr = bfile_name.split("-")[0]
+
     '''
     # Create list of causal SNPs required by GCTA
     cut -f2 !{bim} | head -n 10 > !{chr}-causal.snplist
@@ -363,7 +370,7 @@ if ( params.simulate_plink && params.simulate_gwas_sum_stats && params.gwas_case
     # Run GCTA
     gcta64 \
     --bfile !{bfile_name} \
-    --simu-cc !{params.gwas_cases} !{params.gwas_controls} \
+    --simu-cc !{rounded_case_num} !{controls_num} \
     --simu-causal-loci !{chr}-causal.snplist \
     --out !{chr}-gwas-statistics \
     !{extra_gcta_flags}
@@ -407,3 +414,5 @@ if (params.simulate_cb_output && params.simulate_cb_output_config) {
   }
 
 }
+
+
