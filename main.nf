@@ -77,7 +77,7 @@ summary['mutation_rate']                  = params.mutation_rate
 summary['simulate_vcf']                   = params.simulate_vcf
 summary['simulate_plink']                 = params.simulate_plink
 summary['simulate_gwas_sum_stats']        = params.simulate_gwas_sum_stats
-summary['gwas_cases_proportion']                     = params.gwas_cases_proportion
+summary['gwas_cases_proportion']          = params.gwas_cases_proportion
 summary['gwas_pheno_trait_type']          = params.gwas_pheno_trait_type
 summary['gwas_disease_prevalance']        = params.gwas_disease_prevalance
 summary['gwas_simulation_replicates']     = params.gwas_simulation_replicates
@@ -209,7 +209,7 @@ process simulate_gen_and_sample {
     val num_participants from params.num_participants
 
     output:
-    file("*{simulated_hapgen-updated.gen,simulated_hapgen-updated.sample}") into (simulated_gen_for_vcf_ch, simulated_gen_for_plink_ch)
+    file("*{simulated_hapgen-${num_participants}ind-updated.gen,simulated_hapgen-${num_participants}ind-updated.sample}") into (simulated_gen_for_vcf_ch, simulated_gen_for_plink_ch)
 
     shell:
     position = leg.baseName.split("-")[1]
@@ -223,20 +223,20 @@ process simulate_gen_and_sample {
     -m !{map} \
     -l !{leg} \
     -h !{unzipped_hap} \
-    -o !{chr}-simulated_hapgen \
+    -o !{chr}-simulated_hapgen-!{num_participants}ind \
     -n !{num_participants} 0 \
     -dl !{position} 0 0 0 \
     -no_haps_output !{extra_hapgen2_flags}
 
     # Rename output files (phenotypes are not relevant at this stage)
-    mv !{chr}-simulated_hapgen.controls.gen !{chr}-simulated_hapgen.gen
-    mv !{chr}-simulated_hapgen.controls.sample !{chr}-simulated_hapgen.sample
+    mv !{chr}-simulated_hapgen-!{num_participants}ind.controls.gen !{chr}-simulated_hapgen-!{num_participants}ind.gen
+    mv !{chr}-simulated_hapgen-!{num_participants}ind.controls.sample !{chr}-simulated_hapgen-!{num_participants}ind.sample
 
     # Update/correct the output files:
     # (1) Replace fake chromosome names (hapgen2 outputs: "snp_0", "snp_1" instead of a unique chromosome name)
     # (2) Remove the dash from the sample names (but not the header) - required for downstream PLINK steps
-    awk '$1="!{chr}"' !{chr}-simulated_hapgen.gen > !{chr}-simulated_hapgen-updated.gen
-    sed '1d' !{chr}-simulated_hapgen.sample | sed 's/id1_/id/g' | sed 's/id2_/id/g' | awk 'BEGIN{print "ID_1 ID_2 missing pheno"}{print}' > !{chr}-simulated_hapgen-updated.sample
+    awk '$1="!{chr}"' !{chr}-simulated_hapgen-!{num_participants}ind.gen > !{chr}-simulated_hapgen-!{num_participants}ind-updated.gen
+    sed '1d' !{chr}-simulated_hapgen-!{num_participants}ind.sample | sed 's/id1_/id/g' | sed 's/id2_/id/g' | awk 'BEGIN{print "ID_1 ID_2 missing pheno"}{print}' > !{chr}-simulated_hapgen-!{num_participants}ind-updated.sample
     '''
 }
 
