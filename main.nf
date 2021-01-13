@@ -202,13 +202,19 @@ all_hapgen_inputs_ch = all_ref_ch.join(legend_for_hapgen2_ch)
 
 process simulate_gen_and_sample {
     label "high_memory"
-    publishDir "${params.outdir}/simulated_hapgen", mode: "copy"
+    publishDir "${params.outdir}/simulated_hapgen", mode: "copy",
+    saveAs: { filename ->
+        if (filename.endsWith('-updated.gen')) "$filename"
+        else if (filename.endsWith('-updated.sample')) "$filename"
+        else if (filename.endsWith('.summary')) "logs/$filename"
+    }
     
     input:
     tuple val(chr), file(map), file(hap), file(leg) from all_hapgen_inputs_ch
     val num_participants from params.num_participants
 
     output:
+    file("*") into simulated_gen_results_ch
     file("*{simulated_hapgen-${num_participants}ind-updated.gen,simulated_hapgen-${num_participants}ind-updated.sample}") into (simulated_gen_for_vcf_ch, simulated_gen_for_plink_ch)
 
     shell:
@@ -248,13 +254,17 @@ process simulate_gen_and_sample {
 
 if (params.simulate_vcf){
   process simulate_vcf {
-    publishDir "${params.outdir}/simulated_vcf/not_compressed_and_indexed", mode: "copy"
+    publishDir "${params.outdir}/simulated_vcf/not_compressed_and_indexed", mode: "copy",
+    saveAs: { filename ->
+      if (filename.endsWith('.vcf')) "$filename"
+      else if (filename.endsWith('.log')) "logs/$filename"
+    }
 
     input:
     tuple file(gen), file(sample) from simulated_gen_for_vcf_ch
 
     output:
-    file("*") into not_compressed_and_indexed_simulated_vcf_results
+    file("*") into not_compressed_and_indexed_simulated_vcf_results_ch
     file("*vcf") into not_compressed_and_indexed_simulated_vcf_ch
 
     shell:
@@ -296,12 +306,19 @@ if (params.simulate_vcf){
 
 if (params.simulate_plink){
     process simulate_plink {
-        publishDir "${params.outdir}/simulated_plink", mode: "copy"
+        publishDir "${params.outdir}/simulated_plink", mode: "copy",
+        saveAs: { filename -> 
+            if (filename.endsWith('.bed')) "$filename"
+            else if (filename.endsWith('.bim')) "$filename"
+            else if (filename.endsWith('.fam')) "$filename"
+            else if (filename.endsWith('.log')) "logs/$filename"
+        }
 
         input:
         tuple file(gen), file(sample) from simulated_gen_for_plink_ch
 
         output:
+        file("*") into simulated_plink_results_ch
         file("*.{bed,bim,fam}") into simulated_plink_ch
 
         shell:
@@ -337,7 +354,13 @@ if (params.gwas_cases_proportion <= 0 | params.gwas_cases_proportion > 1) {
 if ( params.simulate_plink && params.simulate_gwas_sum_stats && params.gwas_cases_proportion){
 
   process simulate_gwas_sum_stats {
-    publishDir "${params.outdir}/simulated_gwas_sum_stats", mode: "copy"
+    publishDir "${params.outdir}/simulated_gwas_sum_stats", mode: "copy",
+    saveAs: { filename -> 
+        if (filename.endsWith('.snplist')) "$filename"
+        else if (filename.endsWith('.par')) "$filename"
+        else if (filename.endsWith('.phen')) "$filename"
+        else if (filename.endsWith('.log')) "logs/$filename"
+    }
 
     input:
     tuple file(bed), file(bim), file(fam) from simulated_plink_ch
