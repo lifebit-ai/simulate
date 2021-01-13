@@ -25,7 +25,7 @@ def helpMessage() {
     nextflow run main.nf --num_participants 40
 
     Essential parameters:
-    --num_participants              number of participants to simulate
+    --num_participants               number of participants to simulate
     
     Optional parameters:
     --effective_population_size      population size (for hapgen2) (default: 11418)
