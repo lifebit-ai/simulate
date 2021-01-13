@@ -128,14 +128,14 @@ process download_leg_files {
     publishDir "${params.outdir}/leg-data", mode: "copy"
     
     input:
-    file("all_leg.tar.gz") from legend_for_hapgen2_file_ch
+    file leg from legend_for_hapgen2_file_ch
 
     output:
     file("*leg") into downloaded_leg_files_ch
 
     script:
     """
-    tar xvzf all_leg.tar.gz -C .
+    tar xvzf ${leg} -C .
     """
 }
 
@@ -162,7 +162,7 @@ process download_1000G {
     publishDir "${params.outdir}/1000G-data", mode: "copy"
     
     input:
-    file("ALL_1000G_phase1integrated_v3_impute.tgz") from reference_1000G_ch
+    file reference_1000G from reference_1000G_ch
 
     output:
     file("*combined_b37.txt") into downloaded_1000G_genetic_map_ch
@@ -170,7 +170,7 @@ process download_1000G {
 
     script:
     """
-    tar xvzf ALL_1000G_phase1integrated_v3_impute.tgz --strip-components 1
+    tar xvzf ${reference_1000G} --strip-components 1
     """
 }
 
@@ -272,7 +272,7 @@ if (params.simulate_vcf){
       publishDir "${params.outdir}/simulated_vcf/compressed_and_indexed", mode: "copy"
 
       input:
-      file(vcf) from not_compressed_and_indexed_simulated_vcf_ch
+      file vcf from not_compressed_and_indexed_simulated_vcf_ch
 
       output:
       file("*") into compressed_and_indexed_simulated_vcf_ch
@@ -400,7 +400,7 @@ if (params.simulate_cb_output && params.simulate_cb_output_config) {
     publishDir "${params.outdir}/simulated_cohort_browser_data", mode: 'copy'
 
     input:
-    file(config) from cohort_browser_yaml_config_ch
+    file config from cohort_browser_yaml_config_ch
 
     output:
     file("${params.simulate_cb_output_output_tag}_pheno_data.csv") into simulated_cb_pheno_data_ch
