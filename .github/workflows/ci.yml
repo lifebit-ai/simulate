@@ -8,7 +8,7 @@ jobs:
     strategy:
       matrix:
         nxf_ver: ['20.01.0', '']
-        gwas_cases: ['0.40', '0.4', '0.41','0.423','0.47']
+        gwas_cases_proportion: ['0.40', '0.4', '0.41','0.423','0.47']
     steps:
       - uses: actions/checkout@v1
       - name: Install Nextflow
@@ -18,7 +18,7 @@ jobs:
           sudo mv nextflow /usr/local/bin/
       - name: Run pipeline with basic test profile - simulate plink, vcf and gwas summary statistics
         run: |
-          nextflow run ${GITHUB_WORKSPACE} --gwas_cases ${{ matrix.gwas_cases }} -profile test
+          nextflow run ${GITHUB_WORKSPACE} --gwas_cases_proportion ${{ matrix.gwas_cases_proportion }} -profile test
   various_flags_test:
     runs-on: ubuntu-latest
     strategy:

@@ -33,7 +33,7 @@ def helpMessage() {
     --simulate_vcf                   simulate VCF files (default: false)
     --simulate_plink                 simulate PLINK files (default: false)           
     --simulate_gwas_sum_stats        simulate GWAS summary statistics (default: false)
-    --gwas_cases                     the number of cases to simulate for the GWAS summary statistics, represented as a fraction of --num_participants (bigger than 0 and up to 1) (default: 0.5) (see docs/usage.md for important additional details including on how to interpret the GCTA output)
+    --gwas_cases_proportion                     the number of cases to simulate for the GWAS summary statistics, represented as a fraction of --num_participants (bigger than 0 and up to 1) (default: 0.5) (see docs/usage.md for important additional details including on how to interpret the GCTA output)
     --gwas_pheno_trait_type          type of trait of interest (pheno_col) to use when simulating GWAS summary statistics with GTCA (available: `binary`, `quantitative` ; default: `binary`)
     --gwas_heritability              heritibility for simulating GWAS summary statistics (default: 0.1)
     --gwas_disease_prevalance        disease prevalence for simulating GWAS summary statistics (default: 0.1)
@@ -77,7 +77,7 @@ summary['mutation_rate']                  = params.mutation_rate
 summary['simulate_vcf']                   = params.simulate_vcf
 summary['simulate_plink']                 = params.simulate_plink
 summary['simulate_gwas_sum_stats']        = params.simulate_gwas_sum_stats
-summary['gwas_cases']                     = params.gwas_cases
+summary['gwas_cases_proportion']                     = params.gwas_cases_proportion
 summary['gwas_pheno_trait_type']          = params.gwas_pheno_trait_type
 summary['gwas_disease_prevalance']        = params.gwas_disease_prevalance
 summary['gwas_simulation_replicates']     = params.gwas_simulation_replicates
@@ -328,30 +328,30 @@ if (!params.simulate_plink && params.simulate_gwas_sum_stats) {
   \nPlease set both --simulate_plink and --simulate_gwas_sum_stats to true."
 }
 
-// Check that --gwas_cases is bigger than 0 and no larger than 1
-if (params.gwas_cases <= 0 | params.gwas_cases > 1) {
-  exit 1, "The proportion of cases (--gwas_cases) supplied is invalid. \
-  \nPlease set --gwas_cases to a value bigger than 0 and up to 1. For example, --gwas_cases 0.4."
+// Check that --gwas_cases_proportion is bigger than 0 and no larger than 1
+if (params.gwas_cases_proportion <= 0 | params.gwas_cases_proportion > 1) {
+  exit 1, "The proportion of cases (--gwas_cases_proportion) supplied is invalid. \
+  \nPlease set --gwas_cases_proportion to a value bigger than 0 and up to 1. For example, --gwas_cases_proportion 0.4."
 }
 
-if ( params.simulate_plink && params.simulate_gwas_sum_stats && params.gwas_cases){
+if ( params.simulate_plink && params.simulate_gwas_sum_stats && params.gwas_cases_proportion){
 
   process simulate_gwas_sum_stats {
     publishDir "${params.outdir}/simulated_gwas_sum_stats", mode: "copy"
 
     input:
     tuple file(bed), file(bim), file(fam) from simulated_plink_ch
-    val gwas_cases from params.gwas_cases
+    val gwas_cases_proportion from params.gwas_cases_proportion
     val num_participants from params.num_participants
 
     output:
     file("*") into simulated_gwas_sum_stats_ch
 
     shell:
-    // Calculate number of cases based on --gwas_cases.
+    // Calculate number of cases based on --gwas_cases_proportion.
     // Then round the number down to represent a real number of participants (i.e. an integer).
     // Then determine number of controls based off of it.
-    proportion_cases = gwas_cases
+    proportion_cases = gwas_cases_proportion
     total_participants = num_participants
   
     cases_num = proportion_cases * total_participants
