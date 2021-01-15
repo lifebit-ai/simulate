@@ -4,7 +4,7 @@ LABEL description="Docker image containing all requirements for lifebit-ai/simul
       author="magda@lifebit.ai"
 
 RUN apt-get update -y  \ 
-    && apt-get install -y wget zip procps \
+    && apt-get install -y wget zip procps gawk \
     && rm -rf /var/lib/apt/lists/*
 
 COPY environment.yml /
