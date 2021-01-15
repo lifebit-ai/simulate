@@ -25,7 +25,7 @@ def helpMessage() {
     nextflow run main.nf --num_participants 40
 
     Essential parameters:
-    --num_participants              number of participants to simulate
+    --num_participants               number of participants to simulate
     
     Optional parameters:
     --effective_population_size      population size (for hapgen2) (default: 11418)
@@ -33,7 +33,7 @@ def helpMessage() {
     --simulate_vcf                   simulate VCF files (default: false)
     --simulate_plink                 simulate PLINK files (default: false)           
     --simulate_gwas_sum_stats        simulate GWAS summary statistics (default: false)
-    --gwas_cases                     the number of cases to simulate for the GWAS summary statistics, represented as a fraction of --num_participants (bigger than 0 and up to 1) (default: 0.5) (see docs/usage.md for important additional details including on how to interpret the GCTA output)
+    --gwas_cases_proportion          the number of cases to simulate for the GWAS summary statistics, represented as a fraction of --num_participants (bigger than 0 and up to 1) (default: 0.5) (see docs/usage.md for important additional details including on how to interpret the GCTA output)
     --gwas_pheno_trait_type          type of trait of interest (pheno_col) to use when simulating GWAS summary statistics with GTCA (available: `binary`, `quantitative` ; default: `binary`)
     --gwas_heritability              heritibility for simulating GWAS summary statistics (default: 0.1)
     --gwas_disease_prevalance        disease prevalence for simulating GWAS summary statistics (default: 0.1)
@@ -77,7 +77,7 @@ summary['mutation_rate']                  = params.mutation_rate
 summary['simulate_vcf']                   = params.simulate_vcf
 summary['simulate_plink']                 = params.simulate_plink
 summary['simulate_gwas_sum_stats']        = params.simulate_gwas_sum_stats
-summary['gwas_cases']                     = params.gwas_cases
+summary['gwas_cases_proportion']          = params.gwas_cases_proportion
 summary['gwas_pheno_trait_type']          = params.gwas_pheno_trait_type
 summary['gwas_disease_prevalance']        = params.gwas_disease_prevalance
 summary['gwas_simulation_replicates']     = params.gwas_simulation_replicates
@@ -128,14 +128,14 @@ process download_leg_files {
     publishDir "${params.outdir}/leg-data", mode: "copy"
     
     input:
-    file("all_leg.tar.gz") from legend_for_hapgen2_file_ch
+    file leg from legend_for_hapgen2_file_ch
 
     output:
     file("*leg") into downloaded_leg_files_ch
 
     script:
     """
-    tar xvzf all_leg.tar.gz -C .
+    tar xvzf ${leg} -C .
     """
 }
 
@@ -162,7 +162,7 @@ process download_1000G {
     publishDir "${params.outdir}/1000G-data", mode: "copy"
     
     input:
-    file("ALL_1000G_phase1integrated_v3_impute.tgz") from reference_1000G_ch
+    file reference_1000G from reference_1000G_ch
 
     output:
     file("*combined_b37.txt") into downloaded_1000G_genetic_map_ch
@@ -170,7 +170,7 @@ process download_1000G {
 
     script:
     """
-    tar xvzf ALL_1000G_phase1integrated_v3_impute.tgz --strip-components 1
+    tar xvzf ${reference_1000G} --strip-components 1
     """
 }
 
@@ -202,14 +202,20 @@ all_hapgen_inputs_ch = all_ref_ch.join(legend_for_hapgen2_ch)
 
 process simulate_gen_and_sample {
     label "high_memory"
-    publishDir "${params.outdir}/simulated_hapgen", mode: "copy"
+    publishDir "${params.outdir}/simulated_hapgen", mode: "copy",
+    saveAs: { filename ->
+        if (filename.endsWith('-updated.gen')) "$filename"
+        else if (filename.endsWith('-updated.sample')) "$filename"
+        else if (filename.endsWith('.summary')) "logs/$filename"
+    }
     
     input:
     tuple val(chr), file(map), file(hap), file(leg) from all_hapgen_inputs_ch
     val num_participants from params.num_participants
 
     output:
-    file("*{simulated_hapgen-updated.gen,simulated_hapgen-updated.sample}") into (simulated_gen_for_vcf_ch, simulated_gen_for_plink_ch)
+    file("*") into simulated_gen_results_ch
+    file("*{simulated_hapgen-${num_participants}ind-updated.gen,simulated_hapgen-${num_participants}ind-updated.sample}") into (simulated_gen_for_vcf_ch, simulated_gen_for_plink_ch)
 
     shell:
     position = leg.baseName.split("-")[1]
@@ -223,20 +229,20 @@ process simulate_gen_and_sample {
     -m !{map} \
     -l !{leg} \
     -h !{unzipped_hap} \
-    -o !{chr}-simulated_hapgen \
+    -o !{chr}-simulated_hapgen-!{num_participants}ind \
     -n !{num_participants} 0 \
     -dl !{position} 0 0 0 \
     -no_haps_output !{extra_hapgen2_flags}
 
     # Rename output files (phenotypes are not relevant at this stage)
-    mv !{chr}-simulated_hapgen.controls.gen !{chr}-simulated_hapgen.gen
-    mv !{chr}-simulated_hapgen.controls.sample !{chr}-simulated_hapgen.sample
+    mv !{chr}-simulated_hapgen-!{num_participants}ind.controls.gen !{chr}-simulated_hapgen-!{num_participants}ind.gen
+    mv !{chr}-simulated_hapgen-!{num_participants}ind.controls.sample !{chr}-simulated_hapgen-!{num_participants}ind.sample
 
     # Update/correct the output files:
     # (1) Replace fake chromosome names (hapgen2 outputs: "snp_0", "snp_1" instead of a unique chromosome name)
     # (2) Remove the dash from the sample names (but not the header) - required for downstream PLINK steps
-    awk '$1="!{chr}"' !{chr}-simulated_hapgen.gen > !{chr}-simulated_hapgen-updated.gen
-    sed '1d' !{chr}-simulated_hapgen.sample | sed 's/id1_/id/g' | sed 's/id2_/id/g' | awk 'BEGIN{print "ID_1 ID_2 missing pheno"}{print}' > !{chr}-simulated_hapgen-updated.sample
+    awk '$1="!{chr}"' !{chr}-simulated_hapgen-!{num_participants}ind.gen > !{chr}-simulated_hapgen-!{num_participants}ind-updated.gen
+    sed '1d' !{chr}-simulated_hapgen-!{num_participants}ind.sample | sed 's/id1_/id/g' | sed 's/id2_/id/g' | awk 'BEGIN{print "ID_1 ID_2 missing pheno"}{print}' > !{chr}-simulated_hapgen-!{num_participants}ind-updated.sample
     '''
 }
 
@@ -248,13 +254,17 @@ process simulate_gen_and_sample {
 
 if (params.simulate_vcf){
   process simulate_vcf {
-    publishDir "${params.outdir}/simulated_vcf/not_compressed_and_indexed", mode: "copy"
+    publishDir "${params.outdir}/simulated_vcf/not_compressed_and_indexed", mode: "copy",
+    saveAs: { filename ->
+      if (filename.endsWith('.vcf')) "$filename"
+      else if (filename.endsWith('.log')) "logs/$filename"
+    }
 
     input:
     tuple file(gen), file(sample) from simulated_gen_for_vcf_ch
 
     output:
-    file("*") into not_compressed_and_indexed_simulated_vcf_results
+    file("*") into not_compressed_and_indexed_simulated_vcf_results_ch
     file("*vcf") into not_compressed_and_indexed_simulated_vcf_ch
 
     shell:
@@ -272,7 +282,7 @@ if (params.simulate_vcf){
       publishDir "${params.outdir}/simulated_vcf/compressed_and_indexed", mode: "copy"
 
       input:
-      file(vcf) from not_compressed_and_indexed_simulated_vcf_ch
+      file vcf from not_compressed_and_indexed_simulated_vcf_ch
 
       output:
       file("*") into compressed_and_indexed_simulated_vcf_ch
@@ -296,12 +306,19 @@ if (params.simulate_vcf){
 
 if (params.simulate_plink){
     process simulate_plink {
-        publishDir "${params.outdir}/simulated_plink", mode: "copy"
+        publishDir "${params.outdir}/simulated_plink", mode: "copy",
+        saveAs: { filename -> 
+            if (filename.endsWith('.bed')) "$filename"
+            else if (filename.endsWith('.bim')) "$filename"
+            else if (filename.endsWith('.fam')) "$filename"
+            else if (filename.endsWith('.log')) "logs/$filename"
+        }
 
         input:
         tuple file(gen), file(sample) from simulated_gen_for_plink_ch
 
         output:
+        file("*") into simulated_plink_results_ch
         file("*.{bed,bim,fam}") into simulated_plink_ch
 
         shell:
@@ -328,30 +345,36 @@ if (!params.simulate_plink && params.simulate_gwas_sum_stats) {
   \nPlease set both --simulate_plink and --simulate_gwas_sum_stats to true."
 }
 
-// Check that --gwas_cases is bigger than 0 and no larger than 1
-if (params.gwas_cases <= 0 | params.gwas_cases > 1) {
-  exit 1, "The proportion of cases (--gwas_cases) supplied is invalid. \
-  \nPlease set --gwas_cases to a value bigger than 0 and up to 1. For example, --gwas_cases 0.4."
+// Check that --gwas_cases_proportion is bigger than 0 and no larger than 1
+if (params.gwas_cases_proportion <= 0 | params.gwas_cases_proportion > 1) {
+  exit 1, "The proportion of cases (--gwas_cases_proportion) supplied is invalid. \
+  \nPlease set --gwas_cases_proportion to a value bigger than 0 and up to 1. For example, --gwas_cases_proportion 0.4."
 }
 
-if ( params.simulate_plink && params.simulate_gwas_sum_stats && params.gwas_cases){
+if ( params.simulate_plink && params.simulate_gwas_sum_stats && params.gwas_cases_proportion){
 
   process simulate_gwas_sum_stats {
-    publishDir "${params.outdir}/simulated_gwas_sum_stats", mode: "copy"
+    publishDir "${params.outdir}/simulated_gwas_sum_stats", mode: "copy",
+    saveAs: { filename -> 
+        if (filename.endsWith('.snplist')) "$filename"
+        else if (filename.endsWith('.par')) "$filename"
+        else if (filename.endsWith('.phen')) "$filename"
+        else if (filename.endsWith('.log')) "logs/$filename"
+    }
 
     input:
     tuple file(bed), file(bim), file(fam) from simulated_plink_ch
-    val gwas_cases from params.gwas_cases
+    val gwas_cases_proportion from params.gwas_cases_proportion
     val num_participants from params.num_participants
 
     output:
     file("*") into simulated_gwas_sum_stats_ch
 
     shell:
-    // Calculate number of cases based on --gwas_cases.
+    // Calculate number of cases based on --gwas_cases_proportion.
     // Then round the number down to represent a real number of participants (i.e. an integer).
     // Then determine number of controls based off of it.
-    proportion_cases = gwas_cases
+    proportion_cases = gwas_cases_proportion
     total_participants = num_participants
   
     cases_num = proportion_cases * total_participants
@@ -400,7 +423,7 @@ if (params.simulate_cb_output && params.simulate_cb_output_config) {
     publishDir "${params.outdir}/simulated_cohort_browser_data", mode: 'copy'
 
     input:
-    file(config) from cohort_browser_yaml_config_ch
+    file config from cohort_browser_yaml_config_ch
 
     output:
     file("${params.simulate_cb_output_output_tag}_pheno_data.csv") into simulated_cb_pheno_data_ch
