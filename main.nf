@@ -321,6 +321,7 @@ if (params.simulate_vcf){
 
         # Reheader
         bcftools reheader --samples ${sample_ids} --output ${vcf}.gz temp_${vcf}.gz
+        rm temp_${vcf}.gz
 
         # Index the compressed VCFc file
         bcftools index ${vcf}.gz
