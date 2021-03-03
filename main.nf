@@ -331,6 +331,7 @@ if (params.simulate_vcf){
         bcftools index ${vcf}.gz
         """
       }
+    }
 
     if( !params.sample_ids ) {
       process compress_and_index_vcf {
