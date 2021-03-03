@@ -26,7 +26,14 @@ def helpMessage() {
 
     Essential parameters:
     --num_participants               number of participants to simulate
+    or
+    --sample_ids                     a single column file with sample IDs
+                                     a suitable file can be generated using bcftools query --list-samples cohort_multisample.vcf
+                                     The number of participants to simulate will equal to the number of ids in the --sample_ids file
     
+    NOTE: The parameters --num_participants and --sample_ids are mutually exclusive.
+          Please define only one.
+
     Optional parameters:
     --effective_population_size      population size (for hapgen2) (default: 11418)
     --mutation_rate                  mutation rate (for hapgen2) (default: 1)
@@ -72,6 +79,7 @@ summary['User']                           = workflow.userName
 summary['reference_1000G']                = params.reference_1000G
 summary['legend_for_hapgen2']             = params.legend_for_hapgen2
 summary['num_participants']               = params.num_participants
+summary['sample_ids']                     = params.sample_ids
 summary['effective_population_size']      = params.effective_population_size
 summary['mutation_rate']                  = params.mutation_rate
 summary['simulate_vcf']                   = params.simulate_vcf
@@ -94,9 +102,27 @@ log.info "-\033[2m--------------------------------------------------\033[0m-"
   Setting up parameters and extra optional flags
 ------------------------------------------------*/
 
-if (!params.num_participants) {
+if (!params.num_participants && !params.sample_ids) {
   exit 1, "You have not provided a number of participants to simulate. \
-  \nPlease provide a number using the --num_participants parameter."
+  \nPlease provide either a number using the --num_participants parameter or provide a --sample_ids file. \
+  \nRun the command nextflow run . --help to get a list of required and optional parameters."
+}
+
+if (params.num_participants && params.sample_ids) {
+  exit 1, "You have provided both --num_participants and --sample_ids parameters. \
+  \nPlease provide only one of the two. \
+  \nRun the command nextflow run . --help to get a list of required and optional parameters."
+}
+
+
+// Harmonise num_participants channel name regardless of source
+if (params.sample_ids) {
+  ch_sample_ids =  Channel.value(file(params.sample_ids))
+  ch_num_participants = Channel.fromPath(params.sample_ids).splitText().map{ it.trim() }.count()
+}
+
+if (params.num_participants) {
+  ch_num_participants = Channel.value(params.num_participants)
 }
 
 // Initialise variable to store optional parameters
@@ -211,7 +237,7 @@ process simulate_gen_and_sample {
     
     input:
     tuple val(chr), file(map), file(hap), file(leg) from all_hapgen_inputs_ch
-    val num_participants from params.num_participants
+    val num_participants from ch_num_participants
 
     output:
     file("*") into simulated_gen_results_ch
@@ -365,7 +391,7 @@ if ( params.simulate_plink && params.simulate_gwas_sum_stats && params.gwas_case
     input:
     tuple file(bed), file(bim), file(fam) from simulated_plink_ch
     val gwas_cases_proportion from params.gwas_cases_proportion
-    val num_participants from params.num_participants
+    val num_participants from ch_num_participants
 
     output:
     file("*") into simulated_gwas_sum_stats_ch
