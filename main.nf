@@ -304,23 +304,54 @@ if (params.simulate_vcf){
     '''
     }
 
-    process compress_and_index_vcf {
-      publishDir "${params.outdir}/simulated_vcf/compressed_and_indexed", mode: "copy"
+    if( params.sample_ids ) {
+      process compress_index_reheader_vcf {
+        publishDir "${params.outdir}/simulated_vcf/compressed_and_indexed", mode: "copy"
 
-      input:
-      file vcf from not_compressed_and_indexed_simulated_vcf_ch
+        input:
+        file(vcf) from not_compressed_and_indexed_simulated_vcf_ch
+        file(sample_ids) from ch_sample_ids
 
-      output:
-      file("*") into compressed_and_indexed_simulated_vcf_ch
+        output:
+        file("*") into compressed_and_indexed_simulated_vcf_ch
 
-      shell:
-      '''
-      # Compress the VCF file
-      bcftools view -I !{vcf} -Oz -o !{vcf}.gz
+        script:
+        if( params.sample_ids )
+        """
+        # Compress the VCF file
+        bcftools view -I ${vcf} -Oz -o ${vcf}.gz
 
-      # Index the compressed VCFc file
-      bcftools index !{vcf}.gz
-      '''
+        # Temp move to different name to reheader sample ids
+        mv ${vcf}.gz temp_${vcf}.gz
+
+        # Reheader
+        bcftools reheader --samples ${sample_ids} --output ${vcf}.gz temp_${vcf}.gz
+
+        # Index the compressed VCFc file
+        bcftools index ${vcf}.gz
+        """
+      }
+
+    if( !params.sample_ids ) {
+      process compress_and_index_vcf {
+        publishDir "${params.outdir}/simulated_vcf/compressed_and_indexed", mode: "copy"
+
+        input:
+        file(vcf) from not_compressed_and_indexed_simulated_vcf_ch
+
+        output:
+        file("*") into compressed_and_indexed_simulated_vcf_ch
+
+        script:
+
+        """
+        # Compress the VCF file
+        bcftools view -I ${vcf} -Oz -o ${vcf}.gz
+
+        # Index the compressed VCFc file
+        bcftools index ${vcf}.gz
+        """
+      }
     }
 }
 
