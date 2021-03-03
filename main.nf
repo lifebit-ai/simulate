@@ -280,11 +280,6 @@ process simulate_gen_and_sample {
 
 if (params.simulate_vcf){
   process simulate_vcf {
-    publishDir "${params.outdir}/simulated_vcf/not_compressed_and_indexed", mode: "copy",
-    saveAs: { filename ->
-      if (filename.endsWith('.vcf')) "$filename"
-      else if (filename.endsWith('.log')) "logs/$filename"
-    }
 
     input:
     tuple file(gen), file(sample) from simulated_gen_for_vcf_ch
