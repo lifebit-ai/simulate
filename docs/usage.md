@@ -29,6 +29,18 @@ nextflow run main.nf --num_participants 40
 
 - **--num_participants**: number of participants to simulate
 
+Alternatively
+
+- **--sample_ids**: a single column file with sample IDs
+
+A suitable file can be generated using:
+
+```bash
+bcftools query --list-samples cohort_multisample.vcf
+```
+
+The number of participants to simulate will be equal to the number of ids in the `--sample_ids` file.
+
 ## 5 - Optional parameters
 
 - **--effective_population_size**: population size (for hapgen2) (default: 11418)
