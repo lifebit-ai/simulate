@@ -29,7 +29,7 @@ def helpMessage() {
     or
     --sample_ids                     a single column file with sample IDs
                                      a suitable file can be generated using bcftools query --list-samples cohort_multisample.vcf
-                                     The number of participants to simulate will equal to the number of ids in the --sample_ids file
+                                     The number of participants to simulate will be equal to the number of ids in the --sample_ids file
     
     NOTE: The parameters --num_participants and --sample_ids are mutually exclusive.
           Please define only one.
