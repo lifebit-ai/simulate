@@ -26,7 +26,7 @@ $ tar cvzf ALL_1000G_phase1integrated_v3_impute.tgz ALL_1000G_phase1integrated_v
 
 Push to S3:
 ```
-aws s3 cp ALL_1000G_phase1integrated_v3_impute.tgz s3://testdata-magda/simulate-ci-testing/ --acl public-read
+aws s3 cp ALL_1000G_phase1integrated_v3_impute.tgz s3://lifebit-featured-datasets/pipelines/simulate/simulate-ci-testing/ --acl public-read
 ```
 
 NB: this file was not commited to the repository. It therefore just present on S3.
@@ -41,7 +41,7 @@ $ tar cvzf all_leg_chr21.tar.gz chr21-15954660.leg
 
 Push to S3:
 ```
-aws s3 cp all_leg_chr21.tar.gz s3://testdata-magda/simulate-ci-testing/ --acl public-read
+aws s3 cp all_leg_chr21.tar.gz s3://lifebit-featured-datasets/pipelines/simulate/simulate-ci-testing/simulate-ci-testing/ --acl public-read
 ```
 
 NB: this file was not commited to the repository. It therefore just present on S3.

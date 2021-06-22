@@ -50,7 +50,7 @@ $ bash make-leg-files.sh -f only_biallelic_snps.vcf
 
 ```
 $ tar cvzf all_leg.tar.gz *.leg
-$ aws s3 cp all_leg.tar.gz s3://testdata-magda/ --acl public-read
+$ aws s3 cp all_leg.tar.gz s3://lifebit-featured-datasets/pipelines/simulate/simulate-ci-testing/ --acl public-read
 ```
 
 
