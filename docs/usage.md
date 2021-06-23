@@ -63,7 +63,7 @@ The number of participants to simulate will be equal to the number of ids in the
 
 - **--gwas_simulation_replicates**: number of simulation replicates for simulating GWAS summary statistics (default: 1)
 
-- **--simulate_cb_output**: whether or not you wish to simulate the cohort browser (CB) output data - this can subsequently be used by lifebit-ai/gel-gwas (default: false)
+- **--simulate_cb_output**: whether or not you wish to simulate the cohort browser (CB) output data - this can subsequently be used by `lifebit-ai/biobank-gwas` (default: false)
 
 - **--simulate_cb_output_config**: the YAML config file used to simulate cohort browser data with (must be provided if --simulate_cb_output is set to true )
 
